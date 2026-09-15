@@ -1,3 +1,4 @@
+import { demoPorLink } from "../modo";
 import { SUPABASE_PRODUCAO } from "./configuracao";
 import type { Repositorio } from "./repositorio";
 
@@ -8,7 +9,7 @@ let instancia: Repositorio | null = null;
  * - Em desenvolvimento: Supabase se houver VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY
  *   no .env.local; sem elas, a demonstração no navegador.
  * - No site publicado: sempre o Supabase da clínica (ver configuracao.ts).
- * - VITE_MODO=demo força a demonstração em qualquer caso.
+ * - O link /demo (ver modo.ts) ou VITE_MODO=demo forçam a demonstração.
  * Cada fonte é carregada à parte, para a outra não pesar no arranque.
  */
 export async function iniciarRepositorio(): Promise<Repositorio> {
@@ -16,7 +17,7 @@ export async function iniciarRepositorio(): Promise<Repositorio> {
   const producao = import.meta.env.PROD;
   const url = (import.meta.env.VITE_SUPABASE_URL as string | undefined) || (producao ? SUPABASE_PRODUCAO.url : undefined);
   const chave = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) || (producao ? SUPABASE_PRODUCAO.chaveAnon : undefined);
-  const forcarDemo = import.meta.env.VITE_MODO === "demo";
+  const forcarDemo = import.meta.env.VITE_MODO === "demo" || demoPorLink;
   if (url && chave && !forcarDemo) {
     const { RepositorioSupabase } = await import("./supabase/repositorio");
     instancia = new RepositorioSupabase(url, chave);

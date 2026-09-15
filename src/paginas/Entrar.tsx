@@ -1,12 +1,13 @@
 import { CalendarDays, Mail, Stethoscope, UserRound, type LucideProps } from "lucide-react";
 import { useState, type ComponentType, type FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router";
-import { mensagemDeErro } from "../componentes/Aviso";
+import { mensagemDeErro, useAviso } from "../componentes/Aviso";
 import { Marca } from "../componentes/Marca";
 import { Senha } from "../componentes/Senha";
 import { EcraArranque } from "../componentes/Shell";
 import { Botao, Campo, Rodinha } from "../componentes/ui";
 import { repo } from "../lib/dados";
+import { demoPorLink, sairDaDemo } from "../lib/modo";
 import { casaDoPapel } from "../lib/rotas";
 import { useSessao } from "../lib/sessao";
 import { hoje } from "../lib/tempo";
@@ -29,6 +30,7 @@ const CABECALHOS: Record<Aba, { titulo: string; texto: string }> = {
 export function Entrar() {
   const { utilizador, aCarregar, entrar, criarConta, entrarComo, modo } = useSessao();
   const navigate = useNavigate();
+  const avisar = useAviso();
   const estado = useLocation().state as { de?: string; recuperar?: boolean } | null;
   const destino = estado?.de;
   const [aba, setAba] = useState<Aba>(estado?.recuperar ? "recuperar" : "entrar");
@@ -177,7 +179,7 @@ export function Entrar() {
               <h2 id="titulo-demo" className="font-bold text-tinta">
                 Experimentar a demonstração
               </h2>
-              <p className="mt-0.5 text-sm text-grafite">Os dados ficam neste navegador. Abra dois separadores para ver as vagas a desaparecer em tempo real.</p>
+              <p className="mt-0.5 text-sm text-grafite">Os dados são fictícios e ficam neste navegador. Abra dois separadores para ver as vagas a desaparecer em tempo real.</p>
               <ul className="mt-3 space-y-2">
                 {DEMOS.map((d) => (
                   <li key={d.papel}>
@@ -199,6 +201,23 @@ export function Entrar() {
                   </li>
                 ))}
               </ul>
+              {demoPorLink && (
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-linha pt-3 text-sm">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await repo().reporDemonstracao?.();
+                      avisar("Os dados de demonstração voltaram ao início.");
+                    }}
+                    className="font-semibold text-esperanca underline-offset-4 hover:underline"
+                  >
+                    Repor os dados
+                  </button>
+                  <button type="button" onClick={sairDaDemo} className="font-semibold text-grafite underline-offset-4 hover:underline">
+                    Sair da demonstração
+                  </button>
+                </div>
+              )}
             </section>
           )}
         </div>

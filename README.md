@@ -29,6 +29,11 @@ npm run dev
 
 Para forçar a demonstração com o Supabase configurado: `VITE_MODO=demo` no `.env.local`.
 
+**Para mostrar a clientes:** https://clinica-se.vercel.app/demo liga a demonstração nesse
+navegador, mesmo no site publicado. Os dados são fictícios e não saem do navegador; o Supabase
+não é tocado. No ecrã de entrada ficam "Repor os dados" (para começar cada apresentação do
+zero) e "Sair da demonstração" (volta ao site real).
+
 O site publicado (`npm run build`, Vercel em https://clinica-se.vercel.app) liga-se sempre ao
 Supabase da clínica, sem precisar de variáveis de ambiente no alojamento: os valores públicos
 estão em `src/lib/dados/configuracao.ts`.
