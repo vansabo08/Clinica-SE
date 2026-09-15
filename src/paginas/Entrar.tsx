@@ -1,6 +1,6 @@
 import { CalendarDays, Mail, Stethoscope, UserRound, type LucideProps } from "lucide-react";
 import { useState, type ComponentType, type FormEvent } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router";
+import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import { mensagemDeErro, useAviso } from "../componentes/Aviso";
 import { Marca } from "../componentes/Marca";
 import { Senha } from "../componentes/Senha";
@@ -27,13 +27,20 @@ const CABECALHOS: Record<Aba, { titulo: string; texto: string }> = {
   recuperar: { titulo: "Recuperar acesso", texto: "Escreva o email da conta. Enviamos um link para criar uma palavra-passe nova." },
 };
 
+/** O que se diz a quem chega pela entrada da receção ou do médico. */
+const ENTRADA_EQUIPA: Partial<Record<Papel, { titulo: string; texto: string }>> = {
+  rececao: { titulo: "Entrar na receção", texto: "Use a conta da receção para abrir a agenda da clínica." },
+  medico: { titulo: "Entrar como médico", texto: "Use a sua conta de médico para ver a sua agenda." },
+};
+
 export function Entrar() {
   const { utilizador, aCarregar, entrar, criarConta, entrarComo, modo } = useSessao();
   const navigate = useNavigate();
   const avisar = useAviso();
-  const estado = useLocation().state as { de?: string; recuperar?: boolean } | null;
+  const estado = useLocation().state as { de?: string; recuperar?: boolean; perfil?: Papel } | null;
   const destino = estado?.de;
-  const [aba, setAba] = useState<Aba>(estado?.recuperar ? "recuperar" : "entrar");
+  const equipa = estado?.perfil ? ENTRADA_EQUIPA[estado.perfil] : undefined;
+  const [aba, setAba] = useState<Aba>(estado?.recuperar ? "recuperar" : estado?.perfil === "paciente" ? "entrar" : "entrar");
   const [form, setForm] = useState({ nome: "", telefone: "", email: "", senha: "" });
   const [erro, setErro] = useState<string | null>(null);
   const [aEnviar, setAEnviar] = useState<string | null>(null);
@@ -88,6 +95,7 @@ export function Entrar() {
     }
   }
 
+  const cabecalho = aba === "entrar" && equipa ? equipa : CABECALHOS[aba];
   const mensagemErro = erro && (
     <p role="alert" className="rounded-botao bg-estado-vermelho-fundo px-3.5 py-3 text-sm font-semibold text-estado-vermelho">
       {erro}
@@ -97,7 +105,9 @@ export function Entrar() {
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-2">
       <aside className="hidden flex-col justify-between overflow-hidden bg-esperanca-800 p-12 lg:flex xl:p-16">
-        <Marca clara />
+        <Link to="/" className="self-start rounded-botao" aria-label="Página inicial">
+          <Marca clara />
+        </Link>
         <div>
           <p className="max-w-lg font-serif text-[2.75rem] leading-[1.12] tracking-[-0.01em] text-white xl:text-[3.25rem]">Marque a sua consulta de forma rápida, simples e sem filas.</p>
           <div className="mt-14 max-w-[360px] -rotate-[4deg]" aria-hidden="true">
@@ -109,9 +119,11 @@ export function Entrar() {
 
       <main className="flex flex-col px-5 pb-12 pt-8 sm:px-8 lg:justify-center lg:px-16">
         <div className="mx-auto w-full max-w-[420px]">
-          <Marca className="lg:hidden" />
-          <h1 className="mt-10 font-serif text-[2.25rem] leading-tight text-tinta lg:mt-0">{CABECALHOS[aba].titulo}</h1>
-          <p className="mt-1.5 text-grafite">{CABECALHOS[aba].texto}</p>
+          <Link to="/" className="inline-block rounded-botao lg:hidden" aria-label="Página inicial">
+            <Marca />
+          </Link>
+          <h1 className="mt-10 font-serif text-[2.25rem] leading-tight text-tinta lg:mt-0">{cabecalho.titulo}</h1>
+          <p className="mt-1.5 text-grafite">{cabecalho.texto}</p>
 
           {aba === "recuperar" ? (
             linkEnviadoPara ? (
@@ -167,12 +179,16 @@ export function Entrar() {
             </form>
           )}
 
-          <p className="mt-5 text-center text-grafite">
-            {aba === "entrar" ? "Primeira vez na clínica?" : aba === "criar" ? "Já tem conta?" : "Lembrou-se da palavra-passe?"}{" "}
-            <button type="button" className="font-semibold text-esperanca underline-offset-4 hover:underline" onClick={() => mudarAba(aba === "entrar" ? "criar" : "entrar")}>
-              {aba === "entrar" ? "Criar conta" : "Entrar"}
-            </button>
-          </p>
+          {aba === "entrar" && equipa ? (
+            <p className="mt-5 text-center text-grafite">A conta é criada pela administração da clínica.</p>
+          ) : (
+            <p className="mt-5 text-center text-grafite">
+              {aba === "entrar" ? "Primeira vez na clínica?" : aba === "criar" ? "Já tem conta?" : "Lembrou-se da palavra-passe?"}{" "}
+              <button type="button" className="font-semibold text-esperanca underline-offset-4 hover:underline" onClick={() => mudarAba(aba === "entrar" ? "criar" : "entrar")}>
+                {aba === "entrar" ? "Criar conta" : "Entrar"}
+              </button>
+            </p>
+          )}
 
           {modo === "demo" && entrarComo && (
             <section className="mt-10 rounded-cartao border border-dashed border-linha-forte p-4" aria-labelledby="titulo-demo">

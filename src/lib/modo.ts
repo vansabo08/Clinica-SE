@@ -26,5 +26,5 @@ export function sairDaDemo() {
   } catch {
     /* sem armazenamento: nada a limpar */
   }
-  window.location.assign("/entrar");
+  window.location.assign("/");
 }

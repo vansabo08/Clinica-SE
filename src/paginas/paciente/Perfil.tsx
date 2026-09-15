@@ -129,7 +129,7 @@ export function Perfil() {
         icone={<LogOut className="h-5 w-5" />}
         onClick={async () => {
           await sair();
-          navigate("/entrar", { replace: true });
+          navigate("/", { replace: true });
         }}
       >
         Sair

@@ -9,6 +9,7 @@ import type { Papel } from "./lib/tipos";
 // O paciente é quem abre a aplicação no telemóvel: as páginas dele vêm no
 // primeiro pacote. As da receção e do médico só se carregam quando precisas.
 import { Entrar } from "./paginas/Entrar";
+import { Landing } from "./paginas/Landing";
 // Estática de propósito: lê o endereço do link de recuperação logo no arranque.
 import { NovaSenha } from "./paginas/NovaSenha";
 import { Inicio } from "./paginas/paciente/Inicio";
@@ -50,7 +51,7 @@ function Guarda({ papeis }: { papeis: Papel[] }) {
 function Inicial() {
   const { utilizador, aCarregar } = useSessao();
   if (aCarregar) return <EcraArranque />;
-  return <Navigate to={utilizador ? casaDoPapel(utilizador.papel) : "/entrar"} replace />;
+  return <Navigate to={utilizador ? casaDoPapel(utilizador.papel) : "/"} replace />;
 }
 
 export function App() {
@@ -59,6 +60,7 @@ export function App() {
       <ProvedorSessao>
         <ProvedorAvisos>
           <Routes>
+            <Route path="/" element={<Landing />} />
             <Route path="/entrar" element={<Entrar />} />
             <Route path="/nova-palavra-passe" element={<NovaSenha />} />
 

@@ -123,7 +123,7 @@ function CartaoUtilizador() {
         rotulo="Sair"
         onClick={async () => {
           await sair();
-          navigate("/entrar", { replace: true });
+          navigate("/", { replace: true });
         }}
       >
         <LogOut />
