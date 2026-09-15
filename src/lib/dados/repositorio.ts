@@ -76,6 +76,13 @@ export interface Repositorio {
   sessaoActual(): Promise<Utilizador | null>;
   entrar(email: string, senha: string): Promise<Utilizador>;
   criarConta(dados: NovaConta): Promise<Utilizador>;
+  /** Envia um email com um link para criar uma palavra-passe nova. Na demonstração não sai email. */
+  pedirNovaSenha(email: string): Promise<{ enviado: boolean }>;
+  /**
+   * Muda a palavra-passe de quem tem sessão. Com `actual` (no Perfil), confirma-a
+   * primeiro; sem ela, é o regresso do link de recuperação.
+   */
+  mudarSenha(nova: string, actual?: string): Promise<void>;
   sair(): Promise<void>;
   /** Só no modo demonstração. */
   entrarComo?(papel: Papel): Promise<Utilizador>;

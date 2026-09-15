@@ -59,6 +59,9 @@ function traduzir(e: { message?: string; code?: string } | null): Error {
   if (/already registered/i.test(msg)) return new Error("Já existe uma conta com este email. Entre com ela.");
   if (/Email not confirmed/i.test(msg)) return new Error("Falta confirmar o email. Abra a mensagem que enviámos e depois entre.");
   if (/Password should be/i.test(msg)) return new Error("A palavra-passe precisa de pelo menos 6 caracteres.");
+  if (/rate limit|only request this after/i.test(msg)) return new Error("Já enviámos um email há pouco. Espere um minuto e tente de novo.");
+  if (/should be different from the old password/i.test(msg)) return new Error("A nova palavra-passe tem de ser diferente da actual.");
+  if (/Auth session missing/i.test(msg)) return new Error("A sessão terminou. Peça um novo link para criar a palavra-passe.");
   if (/Failed to fetch|NetworkError|fetch failed/i.test(msg)) return new Error("Sem ligação à internet. Verifique a rede e tente de novo.");
   return new Error(msg || "Não foi possível concluir. Tente de novo.");
 }
@@ -129,7 +132,8 @@ export class RepositorioSupabase implements Repositorio {
   private cacheUtilizador: Promise<Utilizador | null> | null = null;
 
   constructor(url: string, chave: string) {
-    this.sb = createClient(url, chave, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+    // flowType implicit: o link do email de recuperação traz type=recovery no endereço (ver linkRecuperacao.ts).
+    this.sb = createClient(url, chave, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: "implicit" } });
     this.sb.auth.onAuthStateChange((evento) => {
       if (evento === "TOKEN_REFRESHED") return;
       this.cacheUtilizador = null;
@@ -218,6 +222,26 @@ export class RepositorioSupabase implements Repositorio {
     if (!data.session) throw new Error("Conta criada. Enviámos um email para a confirmar: abra-o e depois entre.");
     this.cacheUtilizador = null;
     return this.exigir();
+  }
+
+  async pedirNovaSenha(email: string) {
+    const destino = email.trim();
+    if (!/^\S+@\S+\.\S+$/.test(destino)) throw new Error("Esse email não parece completo.");
+    // O Supabase responde igual exista ou não a conta, para não revelar quem é paciente.
+    const { error } = await this.sb.auth.resetPasswordForEmail(destino, { redirectTo: `${window.location.origin}/nova-palavra-passe` });
+    if (error) throw traduzir(error);
+    return { enviado: true };
+  }
+
+  async mudarSenha(nova: string, actual?: string) {
+    const u = await this.exigir();
+    if (nova.length < 6) throw new Error("A nova palavra-passe precisa de pelo menos 6 caracteres.");
+    if (actual !== undefined) {
+      const { error } = await this.sb.auth.signInWithPassword({ email: u.email, password: actual });
+      if (error) throw new Error("A palavra-passe actual não está certa.");
+    }
+    const { error } = await this.sb.auth.updateUser({ password: nova });
+    if (error) throw traduzir(error);
   }
 
   async sair() {

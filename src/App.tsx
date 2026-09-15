@@ -9,6 +9,8 @@ import type { Papel } from "./lib/tipos";
 // O paciente é quem abre a aplicação no telemóvel: as páginas dele vêm no
 // primeiro pacote. As da receção e do médico só se carregam quando precisas.
 import { Entrar } from "./paginas/Entrar";
+// Estática de propósito: lê o endereço do link de recuperação logo no arranque.
+import { NovaSenha } from "./paginas/NovaSenha";
 import { Inicio } from "./paginas/paciente/Inicio";
 import { Marcar } from "./paginas/paciente/Marcar";
 
@@ -58,6 +60,7 @@ export function App() {
         <ProvedorAvisos>
           <Routes>
             <Route path="/entrar" element={<Entrar />} />
+            <Route path="/nova-palavra-passe" element={<NovaSenha />} />
 
             <Route element={<Guarda papeis={["paciente"]} />}>
               <Route element={<ShellPaciente />}>

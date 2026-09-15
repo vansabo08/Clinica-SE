@@ -3,6 +3,7 @@ import { useState, type ComponentType } from "react";
 import { Link, useNavigate } from "react-router";
 import { mensagemDeErro, useAviso } from "../../componentes/Aviso";
 import { Folha } from "../../componentes/Folha";
+import { FolhaMudarSenha } from "../../componentes/FolhaMudarSenha";
 import { Pagina } from "../../componentes/Shell";
 import { Avatar, Botao, CabecalhoPagina, Campo, Interruptor } from "../../componentes/ui";
 import { repo } from "../../lib/dados";
@@ -37,6 +38,7 @@ export function Perfil() {
   const { dados: espera } = useDados((r) => r.listaEspera(), [], ["espera"]);
 
   const [aEditar, setAEditar] = useState(false);
+  const [aMudarSenha, setAMudarSenha] = useState(false);
   const [form, setForm] = useState({ nome: "", telefone: "", dataNascimento: "" });
   const [erro, setErro] = useState<string | null>(null);
   const [aGuardar, setAGuardar] = useState(false);
@@ -109,6 +111,16 @@ export function Perfil() {
         />
       </section>
 
+      <section className="cartao mt-4 flex flex-wrap items-center justify-between gap-3 p-5">
+        <div className="min-w-0">
+          <p className="font-semibold text-tinta">Palavra-passe</p>
+          <p className="text-sm text-grafite">Para entrar com {u.email}.</p>
+        </div>
+        <Botao variante="secundario" tamanho="sm" onClick={() => setAMudarSenha(true)}>
+          Mudar palavra-passe
+        </Botao>
+      </section>
+
       <Botao
         variante="secundario"
         tamanho="lg"
@@ -135,6 +147,8 @@ export function Perfil() {
           Repor os dados de demonstração
         </button>
       )}
+
+      <FolhaMudarSenha aberta={aMudarSenha} aoFechar={() => setAMudarSenha(false)} />
 
       <Folha
         aberta={aEditar}

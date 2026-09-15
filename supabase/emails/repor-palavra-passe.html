@@ -1,0 +1,42 @@
+<!--
+  Supabase → Authentication → Emails → Reset Password
+  Assunto: Criar uma palavra-passe nova
+  Colar este HTML no corpo da mensagem.
+-->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F7F6;padding:32px 16px;font-family:Arial,Helvetica,sans-serif;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#FFFFFF;border:1px solid #DFE7E3;border-radius:16px;">
+        <tr>
+          <td style="padding:28px 28px 8px;">
+            <p style="margin:0;font-size:13px;color:#5B6A65;">Clínica</p>
+            <p style="margin:2px 0 0;font-family:Georgia,'Times New Roman',serif;font-size:22px;color:#1A2622;">Sagrada Esperança</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px 28px 8px;">
+            <h1 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-weight:normal;font-size:28px;line-height:34px;color:#1A2622;">Criar uma palavra-passe nova</h1>
+            <p style="margin:12px 0 0;font-size:16px;line-height:24px;color:#1A2622;">
+              Pediu para criar uma palavra-passe nova para a conta <strong>{{ .Email }}</strong>.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 28px;">
+            <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#0F5C4A;color:#FFFFFF;text-decoration:none;font-size:16px;font-weight:bold;padding:14px 22px;border-radius:12px;">
+              Criar palavra-passe nova
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 28px 28px;">
+            <p style="margin:0;font-size:14px;line-height:21px;color:#5B6A65;">
+              O link funciona uma vez e expira ao fim de uma hora. Se não foi você que pediu,
+              ignore este email: a palavra-passe actual continua igual.
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>

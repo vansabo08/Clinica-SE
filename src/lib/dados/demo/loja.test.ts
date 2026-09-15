@@ -140,4 +140,13 @@ describe("permissões", () => {
     const aviso = (await repo.notificacoes()).find((n) => n.tipo === "confirmacao" && n.consultaId === "c-tiago-pediatria");
     expect(aviso?.corpo).toContain("de Tiago");
   });
+
+  it("muda a palavra-passe só com a actual certa", async () => {
+    await repo.entrarComo("paciente");
+    expect(await codigo(repo.mudarSenha("nova-senha-1", "errada"))).toBe("A palavra-passe actual não está certa.");
+    await repo.mudarSenha("nova-senha-1", "demo");
+    await repo.sair();
+    expect(await codigo(repo.entrar("maria@demo.ao", "demo"))).toBe("Email ou palavra-passe incorrectos.");
+    expect((await repo.entrar("maria@demo.ao", "nova-senha-1")).nome).toBe("Maria Kiala");
+  });
 });

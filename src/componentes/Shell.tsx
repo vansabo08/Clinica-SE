@@ -7,6 +7,7 @@ import {
   Ellipsis,
   Hourglass,
   House,
+  KeyRound,
   LogOut,
   MapPin,
   Plus,
@@ -26,6 +27,7 @@ import { useSessao } from "../lib/sessao";
 import { useDados } from "../lib/usarDados";
 import { mensagemDeErro, useAviso } from "./Aviso";
 import { Folha } from "./Folha";
+import { FolhaMudarSenha } from "./FolhaMudarSenha";
 import { Marca, Simbolo } from "./Marca";
 import { Avatar, Botao, BotaoIcone, Campo, Rodinha, cx } from "./ui";
 
@@ -103,15 +105,20 @@ function LinkLateral({ item }: { item: ItemNav }) {
 function CartaoUtilizador() {
   const { utilizador, sair } = useSessao();
   const navigate = useNavigate();
+  const [mudarSenha, setMudarSenha] = useState(false);
   if (!utilizador) return null;
   const nome = utilizador.papel === "medico" ? `Dr. ${utilizador.nome}` : utilizador.nome;
   return (
-    <div className="flex items-center gap-3 px-1">
+    <div className="flex items-center gap-2 px-1">
       <Avatar nome={utilizador.nome} tamanho="sm" />
-      <div className="min-w-0 flex-1">
+      <div className="ml-1 min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-tinta">{nome}</p>
         <p className="truncate text-xs text-grafite">{PAPEIS[utilizador.papel]}</p>
       </div>
+      <BotaoIcone rotulo="Mudar palavra-passe" onClick={() => setMudarSenha(true)}>
+        <KeyRound />
+      </BotaoIcone>
+      <FolhaMudarSenha aberta={mudarSenha} aoFechar={() => setMudarSenha(false)} />
       <BotaoIcone
         rotulo="Sair"
         onClick={async () => {

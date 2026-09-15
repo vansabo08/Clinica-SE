@@ -70,7 +70,13 @@ bloqueado, quem vê o quê, avisos, lembretes e lista de espera.
    update users set papel = 'admin' where email = 'o-seu-email@exemplo.com';
    ```
    Para a receção, o mesmo com `papel = 'rececao'`.
-3. **Médicos** — na página Médicos, troque os de demonstração pelos reais,
+3. **Email "Esqueci-me da palavra-passe" em português** — Authentication → Emails →
+   *Reset Password*: assunto "Criar uma palavra-passe nova" e o HTML de
+   `supabase/emails/repor-palavra-passe.html`. O link leva a `/nova-palavra-passe`,
+   que já está autorizado nas Redirect URLs. O serviço de email incluído no Supabase
+   só envia poucos emails por hora: para uso real, ligue um SMTP (Authentication →
+   Emails → SMTP Settings).
+4. **Médicos** — na página Médicos, troque os de demonstração pelos reais,
    ponha o email de cada um e carregue em "Enviar convite" (precisa da função
    `convidar-medico` publicada).
 

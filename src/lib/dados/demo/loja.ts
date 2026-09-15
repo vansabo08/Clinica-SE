@@ -238,6 +238,22 @@ export class RepositorioDemo implements Repositorio {
     return this.publico(u);
   }
 
+  async pedirNovaSenha(email: string) {
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) throw new Error("Esse email não parece completo.");
+    await pausa(this.latencia);
+    return { enviado: false }; // na demonstração não sai email
+  }
+
+  async mudarSenha(nova: string, actual?: string) {
+    const u = this.exigir();
+    if (actual !== undefined && actual !== u.senha) throw new Error("A palavra-passe actual não está certa.");
+    if (nova.length < 6) throw new Error("A nova palavra-passe precisa de pelo menos 6 caracteres.");
+    if (nova === u.senha) throw new Error("A nova palavra-passe tem de ser diferente da actual.");
+    await this.mudar([], (e) => {
+      e.utilizadores.find((x) => x.id === u.id)!.senha = nova;
+    });
+  }
+
   async sair() {
     this.idSessao = null;
     this.emitir(["sessao"]);
