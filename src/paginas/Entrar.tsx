@@ -2,7 +2,6 @@ import { CalendarDays, Stethoscope, UserRound, type LucideProps } from "lucide-r
 import { useState, type ComponentType, type FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router";
 import { mensagemDeErro } from "../componentes/Aviso";
-import { LogoGoogle } from "../componentes/icones";
 import { Marca } from "../componentes/Marca";
 import { Senha } from "../componentes/Senha";
 import { EcraArranque } from "../componentes/Shell";
@@ -19,7 +18,7 @@ const DEMOS: { papel: Papel; titulo: string; nome: string; Icone: ComponentType<
 ];
 
 export function Entrar() {
-  const { utilizador, aCarregar, entrar, entrarComGoogle, criarConta, entrarComo, modo } = useSessao();
+  const { utilizador, aCarregar, entrar, criarConta, entrarComo, modo } = useSessao();
   const navigate = useNavigate();
   const destino = (useLocation().state as { de?: string } | null)?.de;
   const [aba, setAba] = useState<"entrar" | "criar">("entrar");
@@ -38,12 +37,12 @@ export function Entrar() {
     },
   });
 
-  async function correr(qual: string, accao: () => Promise<{ papel: Papel } | null>) {
+  async function correr(qual: string, accao: () => Promise<{ papel: Papel }>) {
     setErro(null);
     setAEnviar(qual);
     try {
       const u = await accao();
-      if (u) navigate(destino ?? casaDoPapel(u.papel), { replace: true });
+      navigate(destino ?? casaDoPapel(u.papel), { replace: true });
     } catch (e) {
       setErro(mensagemDeErro(e));
     } finally {
@@ -75,25 +74,7 @@ export function Entrar() {
           <h1 className="mt-10 font-serif text-[2.25rem] leading-tight text-tinta lg:mt-0">{aba === "entrar" ? "Entrar" : "Criar conta"}</h1>
           <p className="mt-1.5 text-grafite">{aba === "entrar" ? "Veja e marque as suas consultas." : "Leva menos de um minuto."}</p>
 
-          <Botao
-            variante="secundario"
-            tamanho="lg"
-            larguraTotal
-            className="mt-7"
-            icone={<LogoGoogle className="h-5 w-5" />}
-            aCarregar={aEnviar === "google"}
-            onClick={() => correr("google", entrarComGoogle)}
-          >
-            Continuar com Google
-          </Botao>
-
-          <div className="my-6 flex items-center gap-3 text-sm text-grafite">
-            <span className="h-px flex-1 bg-linha" />
-            ou com email
-            <span className="h-px flex-1 bg-linha" />
-          </div>
-
-          <form onSubmit={enviar} className="space-y-4" noValidate>
+          <form onSubmit={enviar} className="mt-7 space-y-4" noValidate>
             {aba === "criar" && (
               <>
                 <Campo rotulo="Nome completo" autoComplete="name" {...campo("nome")} />

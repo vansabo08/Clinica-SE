@@ -75,12 +75,6 @@ export interface Repositorio {
   // Sessão
   sessaoActual(): Promise<Utilizador | null>;
   entrar(email: string, senha: string): Promise<Utilizador>;
-  /**
-   * Entrar com a conta Google. No Supabase o navegador sai para o Google e
-   * volta com a sessão, por isso devolve null; na demonstração devolve logo
-   * o utilizador. Contas Google chegam sem telemóvel — a interface pede-o.
-   */
-  entrarComGoogle(): Promise<Utilizador | null>;
   criarConta(dados: NovaConta): Promise<Utilizador>;
   sair(): Promise<void>;
   /** Só no modo demonstração. */

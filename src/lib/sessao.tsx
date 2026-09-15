@@ -8,7 +8,6 @@ interface ValorSessao {
   aCarregar: boolean;
   modo: "demo" | "supabase";
   entrar(email: string, senha: string): Promise<Utilizador>;
-  entrarComGoogle(): Promise<Utilizador | null>;
   criarConta(d: NovaConta): Promise<Utilizador>;
   entrarComo?: (papel: Papel) => Promise<Utilizador>;
   sair(): Promise<void>;
@@ -47,7 +46,6 @@ export function ProvedorSessao({ children }: { children: ReactNode }) {
       aCarregar,
       modo: r.modo,
       entrar: (email, senha) => r.entrar(email, senha),
-      entrarComGoogle: () => r.entrarComGoogle(),
       criarConta: (d) => r.criarConta(d),
       entrarComo: r.entrarComo ? (p) => r.entrarComo!(p) : undefined,
       sair: () => r.sair(),

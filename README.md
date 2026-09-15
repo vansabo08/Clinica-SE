@@ -24,7 +24,7 @@ npm run dev
 | | Sem `.env.local` | Com `.env.local` (Supabase) |
 |---|---|---|
 | Dados | no navegador, gerados para o dia de hoje | na base de dados do projecto |
-| Contas | três contas de demonstração no ecrã de entrada | email e palavra-passe, ou Google |
+| Contas | três contas de demonstração no ecrã de entrada | email e palavra-passe |
 | Tempo real | entre separadores do mesmo navegador | entre todos os dispositivos |
 
 Para forçar a demonstração com o Supabase configurado: `VITE_MODO=demo` no `.env.local`.
@@ -62,18 +62,15 @@ bloqueado, quem vê o quê, avisos, lembretes e lista de espera.
 
 ### Falta fazer no painel do Supabase
 
-1. **URLs** — Authentication → URL Configuration: em *Site URL* e *Redirect URLs*
-   pôr `http://localhost:5180` (e o endereço final quando publicar).
-2. **Google** — Authentication → Providers → Google: ligar e colar o *Client ID*
-   e o *Client Secret* criados na Google Cloud Console (tipo "Aplicação Web",
-   com o *redirect URI* que o Supabase mostra nessa página).
-3. **A sua conta de administração** — crie a conta na aplicação e depois, no
+1. **URLs** (feito) — Authentication → URL Configuration: *Site URL*
+   `https://clinica-se.vercel.app`; *Redirect URLs* com esse endereço e `http://localhost:5180`.
+2. **A sua conta de administração** — crie a conta na aplicação e depois, no
    SQL Editor:
    ```sql
    update users set papel = 'admin' where email = 'o-seu-email@exemplo.com';
    ```
    Para a receção, o mesmo com `papel = 'rececao'`.
-4. **Médicos** — na página Médicos, troque os de demonstração pelos reais,
+3. **Médicos** — na página Médicos, troque os de demonstração pelos reais,
    ponha o email de cada um e carregue em "Enviar convite" (precisa da função
    `convidar-medico` publicada).
 

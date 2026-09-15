@@ -209,12 +209,6 @@ export class RepositorioSupabase implements Repositorio {
     return this.exigir();
   }
 
-  async entrarComGoogle() {
-    const { error } = await this.sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin } });
-    if (error) throw traduzir(error);
-    return null; // o navegador sai para o Google e volta com a sessão
-  }
-
   async criarConta(d: NovaConta) {
     const telefone = d.telefone.replace(/\D/g, "").replace(/^244/, "");
     if (!d.nome.trim()) throw new Error("Escreva o seu nome.");

@@ -268,7 +268,7 @@ export function ShellPaciente() {
   );
 }
 
-/** Contas criadas com Google chegam sem telemóvel — e a clínica precisa dele. */
+/** Contas criadas fora da aplicação (ex.: no painel do Supabase) podem não ter telemóvel — e a clínica precisa dele. */
 function FolhaTelefone() {
   const { utilizador } = useSessao();
   const avisar = useAviso();

@@ -216,26 +216,6 @@ export class RepositorioDemo implements Repositorio {
     return this.publico(u);
   }
 
-  /** Na demonstração não há Google: simula o regresso do OAuth com uma conta fixa. */
-  async entrarComGoogle() {
-    await pausa(this.latencia * 3);
-    const email = "esperanca.nzinga@gmail.com";
-    let u = this.e.utilizadores.find((x) => x.email === email);
-    if (!u) {
-      u = await this.mudar(["pacientes"], (e) => {
-        const userId = uid();
-        const pacienteId = uid();
-        e.pacientes.push({ id: pacienteId, userId, nome: "Esperança Nzinga", telefone: "", dataNascimento: null, lembreteWhatsapp: true, criadoEm: this.agoraISO() });
-        const novo: UtilizadorDemo = { id: userId, papel: "paciente", nome: "Esperança Nzinga", email, telefone: "", pacienteId, medicoId: null, senha: uid() };
-        e.utilizadores.push(novo);
-        return novo;
-      });
-    }
-    this.idSessao = u.id;
-    this.emitir(["sessao"]);
-    return this.publico(u);
-  }
-
   async criarConta(d: NovaConta) {
     const email = d.email.trim().toLowerCase();
     const telefone = d.telefone.replace(/\D/g, "");
