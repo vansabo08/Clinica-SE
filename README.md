@@ -29,6 +29,10 @@ npm run dev
 
 Para forçar a demonstração com o Supabase configurado: `VITE_MODO=demo` no `.env.local`.
 
+O site publicado (`npm run build`, Vercel em https://clinica-se.vercel.app) liga-se sempre ao
+Supabase da clínica, sem precisar de variáveis de ambiente no alojamento: os valores públicos
+estão em `src/lib/dados/configuracao.ts`.
+
 **Demonstração:** paciente Maria Kiala (mãe de dois), receção Teresa Sambo,
 médico Dr. João Silva. Abra dois separadores — um como paciente, outro como
 receção — e marque no primeiro: a vaga desaparece do segundo sem recarregar.
