@@ -76,17 +76,26 @@ function Contagem({ n, className }: { n: number; className?: string }) {
   return <span className={cx("num inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-esperanca px-1.5 text-[11px] font-bold leading-none text-white", className)}>{n > 99 ? "99+" : n}</span>;
 }
 
-function LinkLateral({ item }: { item: ItemNav }) {
+function LinkLateral({ item, escuro }: { item: ItemNav; escuro?: boolean }) {
   const classe = (activo: boolean) =>
     cx(
-      "group flex h-11 w-full items-center gap-3 rounded-botao px-3 text-left font-semibold transition-colors",
-      activo ? "bg-white text-tinta shadow-[0_0_0_1px_#DFE7E3,0_1px_2px_rgba(16,42,35,0.05)]" : "text-grafite hover:bg-white/70 hover:text-tinta",
+      "group flex h-11 w-full items-center gap-3 rounded-full px-4 text-left font-semibold transition-colors",
+      escuro
+        ? activo
+          ? "bg-white text-esperanca-900 shadow-[0_6px_18px_rgba(0,0,0,0.18)]"
+          : "text-white/75 hover:bg-white/10 hover:text-white"
+        : activo
+          ? "bg-esperanca-50 text-esperanca-800"
+          : "text-grafite hover:bg-papel hover:text-tinta",
     );
   const miolo = (activo: boolean) => (
     <>
-      <item.Icone className={cx("h-5 w-5 shrink-0", activo ? "text-esperanca" : "text-nevoa group-hover:text-grafite")} aria-hidden="true" />
+      <item.Icone
+        className={cx("h-5 w-5 shrink-0", activo ? "text-esperanca" : escuro ? "text-esperanca-300 group-hover:text-white" : "text-nevoa group-hover:text-grafite")}
+        aria-hidden="true"
+      />
       <span className="flex-1">{item.rotulo}</span>
-      <Contagem n={item.contagem ?? 0} />
+      <Contagem n={item.contagem ?? 0} className={escuro && !activo ? "bg-esperanca-300 text-esperanca-900" : undefined} />
     </>
   );
   if (!item.para)
@@ -102,7 +111,7 @@ function LinkLateral({ item }: { item: ItemNav }) {
   );
 }
 
-function CartaoUtilizador() {
+function CartaoUtilizador({ escuro }: { escuro?: boolean }) {
   const { utilizador, sair } = useSessao();
   const navigate = useNavigate();
   const [mudarSenha, setMudarSenha] = useState(false);
@@ -112,15 +121,16 @@ function CartaoUtilizador() {
     <div className="flex items-center gap-2 px-1">
       <Avatar nome={utilizador.nome} tamanho="sm" />
       <div className="ml-1 min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-tinta">{nome}</p>
-        <p className="truncate text-xs text-grafite">{PAPEIS[utilizador.papel]}</p>
+        <p className={cx("truncate text-sm font-semibold", escuro ? "text-white" : "text-tinta")}>{nome}</p>
+        <p className={cx("truncate text-xs", escuro ? "text-white/60" : "text-grafite")}>{PAPEIS[utilizador.papel]}</p>
       </div>
-      <BotaoIcone rotulo="Mudar palavra-passe" onClick={() => setMudarSenha(true)}>
+      <BotaoIcone rotulo="Mudar palavra-passe" className={escuro ? "text-white/70 hover:bg-white/10 hover:text-white" : undefined} onClick={() => setMudarSenha(true)}>
         <KeyRound />
       </BotaoIcone>
       <FolhaMudarSenha aberta={mudarSenha} aoFechar={() => setMudarSenha(false)} />
       <BotaoIcone
         rotulo="Sair"
+        className={escuro ? "text-white/70 hover:bg-white/10 hover:text-white" : undefined}
         onClick={async () => {
           await sair();
           navigate("/", { replace: true });
@@ -134,34 +144,40 @@ function CartaoUtilizador() {
 
 function BarraLateral({ itens, secundarios, accao }: { itens: ItemNav[]; secundarios?: ItemNav[]; accao?: ReactNode }) {
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 hidden w-[272px] flex-col border-r border-linha bg-papel px-4 pb-4 pt-6 lg:flex">
-      <Link to="/" className="rounded-botao px-2 py-1" aria-label="Início">
-        <Marca />
-      </Link>
-      {accao && <div className="mt-7">{accao}</div>}
-      <nav aria-label="Principal" className="-mx-1 mt-6 flex-1 overflow-y-auto px-1">
-        <ul className="space-y-1">
-          {itens.map((i) => (
-            <li key={i.rotulo}>
-              <LinkLateral item={i} />
-            </li>
-          ))}
-        </ul>
-        {secundarios && secundarios.length > 0 && (
-          <>
-            <div className="mx-3 my-4 border-t border-linha" />
-            <ul className="space-y-1">
-              {secundarios.map((i) => (
-                <li key={i.rotulo}>
-                  <LinkLateral item={i} />
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </nav>
-      <div className="mt-4 border-t border-linha pt-4">
-        <CartaoUtilizador />
+    <aside className="fixed inset-y-0 left-0 z-30 hidden w-[272px] p-3 lg:block">
+      <div className="relative isolate flex h-full flex-col overflow-hidden rounded-[32px] bg-[linear-gradient(180deg,#106B64_0%,#0C5751_55%,#083B37_100%)] px-4 pb-4 pt-6">
+        <svg className="pointer-events-none absolute -right-16 -top-16 -z-10 h-56 w-56 text-white/[0.06]" viewBox="0 0 100 100" aria-hidden="true">
+          <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <circle cx="50" cy="50" r="34" fill="none" stroke="currentColor" strokeWidth="1.5" />
+        </svg>
+        <Link to="/" className="rounded-full px-2 py-1" aria-label="Início">
+          <Marca clara compacta />
+        </Link>
+        {accao && <div className="mt-7">{accao}</div>}
+        <nav aria-label="Principal" className="-mx-1 mt-6 flex-1 overflow-y-auto px-1 sem-barra">
+          <ul className="space-y-1">
+            {itens.map((i) => (
+              <li key={i.rotulo}>
+                <LinkLateral item={i} escuro />
+              </li>
+            ))}
+          </ul>
+          {secundarios && secundarios.length > 0 && (
+            <>
+              <div className="mx-4 my-4 border-t border-white/10" />
+              <ul className="space-y-1">
+                {secundarios.map((i) => (
+                  <li key={i.rotulo}>
+                    <LinkLateral item={i} escuro />
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </nav>
+        <div className="mt-4 rounded-full bg-white/[0.08] py-1.5 pl-1.5 pr-1">
+          <CartaoUtilizador escuro />
+        </div>
       </div>
     </aside>
   );
@@ -170,7 +186,7 @@ function BarraLateral({ itens, secundarios, accao }: { itens: ItemNav[]; secunda
 function BarraInferior({ itens }: { itens: ItemNav[] }) {
   return (
     <nav aria-label="Principal" className="fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(10px,env(safe-area-inset-bottom))] lg:hidden">
-      <ul className="vidro mx-auto flex max-w-md items-stretch rounded-[22px] px-1.5 py-1.5">
+      <ul className="vidro mx-auto flex max-w-md items-stretch rounded-full px-2 py-1.5">
         {itens.map((i) => (
           <li key={i.rotulo} className="flex flex-1 justify-center">
             {i.destaque ? <ItemDestaque item={i} /> : <ItemInferior item={i} />}
@@ -192,7 +208,7 @@ function ItemInferior({ item }: { item: ItemNav }) {
     </>
   );
   const classe = (activo: boolean) =>
-    cx("flex h-14 w-full flex-col items-center justify-center gap-1 rounded-[16px] text-[11px] font-semibold transition-colors", activo ? "text-esperanca" : "text-grafite");
+    cx("flex h-14 w-full flex-col items-center justify-center gap-1 rounded-full text-[11px] font-semibold transition-colors", activo ? "text-esperanca" : "text-grafite");
   if (!item.para)
     return (
       <button type="button" onClick={item.aoCarregar} className={classe(false)}>
@@ -259,7 +275,7 @@ export function ShellPaciente() {
           { para: "/clinica", rotulo: "A clínica", Icone: MapPin },
         ]}
         accao={
-          <Botao tamanho="lg" larguraTotal icone={<Plus className="h-5 w-5" strokeWidth={2.5} />} onClick={() => navigate("/marcar")}>
+          <Botao variante="claro" tamanho="lg" larguraTotal icone={<Plus className="h-5 w-5" strokeWidth={2.5} />} onClick={() => navigate("/marcar")}>
             Marcar consulta
           </Botao>
         }
@@ -379,7 +395,7 @@ export function ShellClinica({ tipo }: { tipo: "equipa" | "medico" }) {
           secundarios={tipo === "equipa" ? equipaSecundarios : undefined}
           accao={
             tipo === "equipa" ? (
-              <Botao tamanho="lg" larguraTotal icone={<Plus className="h-5 w-5" strokeWidth={2.5} />} onClick={() => abrirNovo()}>
+              <Botao variante="claro" tamanho="lg" larguraTotal icone={<Plus className="h-5 w-5" strokeWidth={2.5} />} onClick={() => abrirNovo()}>
                 Novo agendamento
               </Botao>
             ) : undefined

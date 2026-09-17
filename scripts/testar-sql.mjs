@@ -37,6 +37,14 @@ async function como(uid, sql, params = []) {
   });
 }
 
+/** Corre SQL sem sessão, como a página inicial. */
+async function anonimo(sql, params = []) {
+  return db.transaction(async (tx) => {
+    await tx.exec("set local role anon");
+    return (await tx.query(sql, params)).rows;
+  });
+}
+
 /** Espera um erro com esta mensagem. */
 async function recusa(uid, sql, params, esperado) {
   try {
@@ -63,7 +71,7 @@ await db.exec(`
   alter default privileges in schema public grant execute on functions to anon, authenticated;
 `);
 
-for (const f of ["0001_esquema.sql", "0002_regras_de_agenda.sql", "0003_permissoes.sql", "0004_ajustes_de_seguranca.sql"]) {
+for (const f of ["0001_esquema.sql", "0002_regras_de_agenda.sql", "0003_permissoes.sql", "0004_ajustes_de_seguranca.sql", "0005_pagina_publica.sql"]) {
   await db.exec(readFileSync(new URL(`../supabase/migrations/${f}`, import.meta.url), "utf8"));
 }
 console.log("Migrações aplicadas.\n");
@@ -190,6 +198,39 @@ await verificar("a Maria marca para o filho com a própria conta", async () => {
   return aviso.corpo.startsWith("A consulta de Tiago com Dr. João Silva");
 });
 await verificar("o Carlos não vê o filho da Maria", async () => (await como(CARLOS, "select count(*)::int n from patients where nome = 'Tiago Kiala'"))[0].n === 0);
+
+console.log("\nPágina pública");
+/** Espera "permission denied" ao correr sem sessão. */
+async function recusaAnonimo(sql) {
+  try {
+    await anonimo(sql);
+  } catch (e) {
+    if (e.message.includes("permission denied")) return true;
+    throw e;
+  }
+  throw new Error("esperava permission denied, mas passou");
+}
+await verificar("sem sessão vêem-se as especialidades activas", async () => {
+  await db.query("insert into specialties (nome, activa) values ('Especialidade fechada', false)");
+  const linhas = await anonimo("select nome from specialties");
+  return linhas.length === 1 && linhas[0].nome === "Cardiologia";
+});
+await verificar("e os médicos activos", async () => {
+  await db.query("insert into doctors (nome, specialty_id, activo) values ('Rui Inactivo', $1, false)", [esp.id]);
+  const linhas = await anonimo("select id, titulo, nome, specialty_id, foto_url, activo, duracao_min from doctors");
+  return linhas.length === 1 && linhas[0].nome === "João Silva";
+});
+await verificar("mas não o email, o telefone nem a conta do médico", async () => (await recusaAnonimo("select email from doctors")) && (await recusaAnonimo("select telefone from doctors")) && recusaAnonimo("select user_id from doctors"));
+await verificar("nem consultas, pacientes ou bloqueios", async () => {
+  for (const t of ["appointments", "patients", "blocked_slots", "users"]) {
+    try {
+      if ((await anonimo(`select count(*)::int n from ${t}`))[0].n !== 0) return false;
+    } catch (e) {
+      if (!e.message.includes("permission denied")) throw e;
+    }
+  }
+  return true;
+});
 
 console.log(falhas ? `\n${falhas} verificação(ões) falharam.` : "\nTodas as verificações passaram.");
 process.exit(falhas ? 1 : 0);

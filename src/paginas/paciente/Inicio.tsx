@@ -7,6 +7,7 @@ import { Senha } from "../../componentes/Senha";
 import { Pagina } from "../../componentes/Shell";
 import { Avatar, Botao, Esqueleto } from "../../componentes/ui";
 import { ESTADOS_ALTERAVEIS, PARENTESCOS } from "../../lib/estados";
+import { FOTOS } from "../../lib/fotos";
 import { primeiroNome, useUtilizador } from "../../lib/sessao";
 import { diaDe, horaDe } from "../../lib/tempo";
 import type { ConsultaDetalhada } from "../../lib/tipos";
@@ -45,33 +46,36 @@ export function Inicio() {
     <Pagina>
       <div className="grid gap-9 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-12">
         <div className="min-w-0">
-          <div className="flex items-center justify-between lg:hidden">
-            <Simbolo className="h-9 w-9" />
-            <Link to="/perfil" aria-label="Perfil" className="rounded-full">
-              <Avatar nome={u.nome} tamanho="sm" />
-            </Link>
+          <div className="relative isolate overflow-hidden rounded-[32px] bg-esperanca-800 px-6 pb-7 pt-5 sm:px-9 sm:pb-9 sm:pt-9">
+            <img src={FOTOS.abertura} alt="" className="absolute inset-0 -z-20 h-full w-full object-cover" />
+            <div className="absolute inset-0 -z-10 bg-[linear-gradient(135deg,rgba(8,59,55,0.92)_0%,rgba(12,87,81,0.84)_50%,rgba(22,131,122,0.7)_100%)]" />
+            <div className="flex items-center justify-between lg:hidden">
+              <Simbolo className="h-9 w-9" clara />
+              <Link to="/perfil" aria-label="Perfil" className="rounded-full ring-2 ring-white/30">
+                <Avatar nome={u.nome} tamanho="sm" />
+              </Link>
+            </div>
+
+            <h1 className="mt-8 font-serif text-[2.625rem] leading-[1.08] tracking-[-0.02em] text-white lg:mt-0 lg:text-[3rem]">Olá, {primeiroNome(u.nome)}</h1>
+            <p className="mt-2 text-lg text-white/80">Pronto para cuidar da sua saúde?</p>
+
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Botao variante="claro" tamanho="xl" larguraTotal className="sm:w-auto sm:px-10" icone={<Plus className="h-6 w-6" strokeWidth={2.5} />} onClick={() => navigate("/marcar")}>
+                Marcar consulta
+              </Botao>
+              {clinica?.whatsapp && (
+                <a
+                  href={linkWhatsApp(clinica.whatsapp, mensagens.agendar(clinica))}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="vidro-foto inline-flex h-12 items-center justify-center gap-2 rounded-full px-5 font-semibold text-white transition-colors hover:bg-white/20"
+                >
+                  <LogoWhatsApp className="h-5 w-5" />
+                  Agendar pelo WhatsApp
+                </a>
+              )}
+            </div>
           </div>
-
-          <h1 className="mt-7 font-serif text-[2.625rem] leading-[1.08] tracking-[-0.015em] text-tinta lg:mt-0 lg:text-[3rem]">Olá, {primeiroNome(u.nome)}</h1>
-          <p className="mt-2 text-lg text-grafite">Pronto para cuidar da sua saúde?</p>
-
-          <Botao tamanho="xl" larguraTotal className="mt-7 sm:w-auto sm:px-10" icone={<Plus className="h-6 w-6" strokeWidth={2.5} />} onClick={() => navigate("/marcar")}>
-            Marcar consulta
-          </Botao>
-          {clinica && (
-            <p className="mt-3 text-sm text-grafite">
-              Prefere falar com alguém?{" "}
-              <a
-                href={linkWhatsApp(clinica.whatsapp, mensagens.agendar(clinica))}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 font-semibold text-esperanca underline-offset-4 hover:underline"
-              >
-                <LogoWhatsApp className="h-4 w-4" />
-                Agendar pelo WhatsApp
-              </a>
-            </p>
-          )}
 
           {vaga?.dados?.inicio && (
             <div className="anim-surgir mt-7 flex flex-col gap-3 rounded-cartao border border-esperanca-200 bg-esperanca-50 p-4 sm:flex-row sm:items-center">
@@ -130,9 +134,9 @@ export function Inicio() {
           </section>
         </div>
 
-        <nav aria-label="Atalhos" className="grid grid-cols-2 content-start gap-3 lg:grid-cols-1 lg:pt-[7.25rem]">
+        <nav aria-label="Atalhos" className="grid grid-cols-2 content-start gap-3 lg:grid-cols-1">
           {atalhos.map((a) => (
-            <Link key={a.para} to={a.para} className="cartao flex flex-col gap-3 p-4 transition-colors hover:border-esperanca-300 lg:flex-row lg:items-center">
+            <Link key={a.para} to={a.para} className="flex flex-col gap-3 rounded-[24px] border border-linha bg-white p-4 transition-colors hover:border-esperanca-300 hover:bg-esperanca-50/50 lg:flex-row lg:items-center">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-esperanca-50 text-esperanca">
                 <a.Icone className="h-5 w-5" aria-hidden="true" />
               </span>

@@ -1,8 +1,8 @@
 import type { Config } from "tailwindcss";
 
 // Tokens da Clínica Sagrada Esperança.
-// Uma só cor forte (o verde-esperança). As cores de estado vivem só nos
-// pontos e etiquetas de estado — nunca como decoração.
+// Teal como cor principal, Raleway em tudo, botões em pílula e cantos generosos.
+// As cores de estado vivem só nos pontos e etiquetas de estado.
 export default {
   // relative: os caminhos contam a partir deste ficheiro, mesmo que o
   // servidor seja lançado de outra pasta.
@@ -11,19 +11,21 @@ export default {
     extend: {
       colors: {
         esperanca: {
-          DEFAULT: "#0F5C4A",
-          700: "#0B4B3C",
-          800: "#083A2F",
-          300: "#8CC0A9",
-          200: "#C3DED1",
-          100: "#E0EEE7",
-          50: "#EEF6F2",
+          DEFAULT: "#16837A",
+          900: "#083B37",
+          800: "#0C5751",
+          700: "#106B64",
+          400: "#3FA89F",
+          300: "#7CCFC6",
+          200: "#BDE5E0",
+          100: "#DCF1EE",
+          50: "#EEF8F6",
         },
-        papel: "#F4F7F6",
-        tinta: "#1A2622",
-        grafite: "#5B6A65",
-        nevoa: "#8A9793",
-        linha: { DEFAULT: "#DFE7E3", forte: "#C8D4CF" },
+        papel: "#F3F8F7",
+        tinta: "#1A2B2A",
+        grafite: "#5D6F6D",
+        nevoa: "#8FA19E",
+        linha: { DEFAULT: "#DFEAE7", forte: "#C7D8D4" },
         estado: {
           ambar: "#9A6212",
           "ambar-fundo": "#FBF1DE",
@@ -40,10 +42,11 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['"Atkinson Hyperlegible Next Variable"', "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
-        serif: ['"Newsreader Variable"', "Georgia", "Cambria", "serif"],
+        sans: ['"Raleway Variable"', "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
+        // Os títulos usam a mesma família, mais pesada (ver index.css).
+        serif: ['"Raleway Variable"', "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
       },
-      // Escala clássica (Bringhurst): 12 · 14 · 16 · 18 · 21 · 24 · 36 · 48
+      // Escala clássica: 12 · 14 · 16 · 18 · 21 · 24 · 36 · 48
       fontSize: {
         xs: ["0.75rem", { lineHeight: "1rem" }],
         sm: ["0.875rem", { lineHeight: "1.25rem" }],
@@ -55,16 +58,16 @@ export default {
         "4xl": ["3rem", { lineHeight: "3.25rem" }],
       },
       borderRadius: {
-        vaga: "10px",
-        botao: "12px",
-        cartao: "16px",
-        senha: "20px",
-        folha: "24px",
+        vaga: "12px",
+        botao: "14px",
+        cartao: "22px",
+        senha: "24px",
+        folha: "28px",
       },
       boxShadow: {
-        suave: "0 1px 2px rgba(16, 42, 35, 0.04), 0 6px 20px rgba(16, 42, 35, 0.04)",
-        flutua: "0 10px 40px rgba(16, 42, 35, 0.10), 0 1px 3px rgba(16, 42, 35, 0.06)",
-        botao: "0 1px 0 rgba(255,255,255,0.18) inset, 0 6px 18px rgba(15, 92, 74, 0.22)",
+        suave: "0 1px 2px rgba(12, 87, 81, 0.04), 0 8px 24px rgba(12, 87, 81, 0.06)",
+        flutua: "0 24px 60px rgba(12, 87, 81, 0.14), 0 2px 6px rgba(12, 87, 81, 0.06)",
+        botao: "0 10px 24px rgba(22, 131, 122, 0.28)",
       },
       transitionTimingFunction: {
         suave: "cubic-bezier(0.22, 1, 0.36, 1)",

@@ -57,6 +57,7 @@ segunda a sexta). Os ficheiros estão em `supabase/`:
 | `migrations/0002_regras_de_agenda.sql` | validação de vagas, marcar / reagendar / cancelar, avisos, lembretes 24 h antes, lista de espera, tempo real, criação de perfis |
 | `migrations/0003_permissoes.sql` | RLS: cada paciente só vê a família; o médico só a agenda dele; a receção gere a clínica |
 | `migrations/0004_ajustes_de_seguranca.sql` | telefone e email dos médicos só para a equipa; pedidos do Security Advisor |
+| `migrations/0005_pagina_publica.sql` | sem sessão, a página inicial lê as especialidades e os médicos activos (sem contactos) |
 | `seed.sql` | dados iniciais (só numa base vazia) |
 | `functions/enviar-lembretes` | envia os lembretes por WhatsApp |
 | `functions/convidar-medico` | convida um médico a criar conta |
@@ -137,9 +138,11 @@ npm run build     # verificação de tipos e pacote de produção
 
 ### Identidade
 
-- **Verde-esperança** `#0F5C4A` como única cor forte, sobre branco frio `#F4F7F6`.
-- **Atkinson Hyperlegible Next** no texto e nos números (desenhada para quem vê
-  mal: distingue 0/O e 1/l nas horas e nos telefones); **Newsreader** nos títulos.
+- **Teal** `#16837A` como cor principal, sobre branco `#F3F8F7`; fotografias com
+  véu teal, cantos muito redondos e botões em pílula.
+- **Raleway** em tudo (títulos a 700), com algarismos alinhados.
+- **Fotografias** em `src/lib/fotos.ts`: são de bancos gratuitos (Unsplash e Pexels)
+  e servem de exemplo. Troque pelos endereços das fotos reais da clínica e da equipa.
 - **A senha**: a próxima consulta aparece como a senha das filas que a aplicação
   substitui, com picotado e a hora em grande. No fim da marcação, sai da ranhura.
 

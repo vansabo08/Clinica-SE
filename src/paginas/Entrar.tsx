@@ -1,17 +1,22 @@
-import { CalendarDays, Mail, Stethoscope, UserRound, type LucideProps } from "lucide-react";
+import { BellRing, CalendarCheck, CalendarDays, Mail, Stethoscope, UserRound, type LucideProps } from "lucide-react";
 import { useState, type ComponentType, type FormEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import { mensagemDeErro, useAviso } from "../componentes/Aviso";
 import { Marca } from "../componentes/Marca";
-import { Senha } from "../componentes/Senha";
 import { EcraArranque } from "../componentes/Shell";
 import { Botao, Campo, Rodinha } from "../componentes/ui";
 import { repo } from "../lib/dados";
+import { FOTOS } from "../lib/fotos";
 import { demoPorLink, sairDaDemo } from "../lib/modo";
 import { casaDoPapel } from "../lib/rotas";
 import { useSessao } from "../lib/sessao";
-import { hoje } from "../lib/tempo";
 import type { Papel } from "../lib/tipos";
+
+const VANTAGENS: [ComponentType<LucideProps>, string][] = [
+  [CalendarCheck, "Só horas livres"],
+  [UserRound, "Para si e para a família"],
+  [BellRing, "Lembrete na véspera"],
+];
 
 const DEMOS: { papel: Papel; titulo: string; nome: string; Icone: ComponentType<LucideProps> }[] = [
   { papel: "paciente", titulo: "Paciente", nome: "Maria Kiala, mãe de dois", Icone: UserRound },
@@ -104,25 +109,33 @@ export function Entrar() {
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-2">
-      <aside className="hidden flex-col justify-between overflow-hidden bg-esperanca-800 p-12 lg:flex xl:p-16">
-        <Link to="/" className="self-start rounded-botao" aria-label="Página inicial">
-          <Marca clara />
-        </Link>
-        <div>
-          <p className="max-w-lg font-serif text-[2.75rem] leading-[1.12] tracking-[-0.01em] text-white xl:text-[3.25rem]">Marque a sua consulta de forma rápida, simples e sem filas.</p>
-          <div className="mt-14 max-w-[360px] -rotate-[4deg]" aria-hidden="true">
-            <Senha medico="Dra. Ana Cardoso" especialidade="Clínica Geral" icone="estetoscopio" dia={hoje()} hora="10:20" estado="confirmada" />
+      <aside className="hidden p-4 lg:block">
+        <div className="relative isolate flex h-full min-h-[640px] flex-col justify-between overflow-hidden rounded-[40px] bg-esperanca-800 p-10 xl:p-14">
+          <img src={FOTOS.entrar} alt="" className="absolute inset-0 -z-20 h-full w-full object-cover" />
+          <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(8,59,55,0.55)_0%,rgba(12,87,81,0.7)_45%,rgba(8,59,55,0.96)_100%)]" />
+          <Link to="/" className="vidro-foto self-start rounded-full py-2 pl-3 pr-5" aria-label="Página inicial">
+            <Marca clara />
+          </Link>
+          <div>
+            <p className="max-w-lg text-[2.75rem] font-bold leading-[1.1] tracking-[-0.02em] text-white xl:text-[3.25rem]">Marque a sua consulta de forma rápida, simples e sem filas.</p>
+            <ul className="mt-8 flex flex-wrap gap-2.5">
+              {VANTAGENS.map(([Icone, texto]) => (
+                <li key={texto} className="vidro-foto inline-flex items-center gap-2 rounded-full px-4 py-2 font-semibold text-white">
+                  <Icone className="h-4 w-4 text-esperanca-300" aria-hidden="true" />
+                  {texto}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
-        <p className="text-sm text-esperanca-200">Avenida Mortala Mohamed, Ilha de Luanda</p>
       </aside>
 
       <main className="flex flex-col px-5 pb-12 pt-8 sm:px-8 lg:justify-center lg:px-16">
         <div className="mx-auto w-full max-w-[420px]">
-          <Link to="/" className="inline-block rounded-botao lg:hidden" aria-label="Página inicial">
+          <Link to="/" className="inline-block rounded-full lg:hidden" aria-label="Página inicial">
             <Marca />
           </Link>
-          <h1 className="mt-10 font-serif text-[2.25rem] leading-tight text-tinta lg:mt-0">{cabecalho.titulo}</h1>
+          <h1 className="mt-10 font-serif text-[2.5rem] leading-tight tracking-[-0.02em] text-tinta lg:mt-0">{cabecalho.titulo}</h1>
           <p className="mt-1.5 text-grafite">{cabecalho.texto}</p>
 
           {aba === "recuperar" ? (
@@ -191,7 +204,7 @@ export function Entrar() {
           )}
 
           {modo === "demo" && entrarComo && (
-            <section className="mt-10 rounded-cartao border border-dashed border-linha-forte p-4" aria-labelledby="titulo-demo">
+            <section className="mt-10 rounded-[28px] bg-esperanca-50 p-5" aria-labelledby="titulo-demo">
               <h2 id="titulo-demo" className="font-bold text-tinta">
                 Experimentar a demonstração
               </h2>
@@ -203,7 +216,7 @@ export function Entrar() {
                       type="button"
                       onClick={() => correr(d.papel, () => entrarComo(d.papel))}
                       disabled={aEnviar !== null}
-                      className="flex w-full items-center gap-3 rounded-botao border border-linha bg-white px-3 py-2.5 text-left transition-colors hover:border-esperanca-300 disabled:opacity-60"
+                      className="flex w-full items-center gap-3 rounded-full border border-linha bg-white py-2 pl-2 pr-4 text-left transition-colors hover:border-esperanca-300 disabled:opacity-60"
                     >
                       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-esperanca-50 text-esperanca">
                         <d.Icone className="h-5 w-5" aria-hidden="true" />

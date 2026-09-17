@@ -11,11 +11,11 @@ type Periodo = "dias" | "semanas" | "meses";
 
 // Cores de série: o verde da marca para consultas; as cores de estado para
 // cancelamentos e faltas (é o que elas já significam no resto da aplicação).
-const COR_CONSULTAS = "#0F5C4A";
+const COR_CONSULTAS = "#16837A";
 const COR_CANCELAMENTOS = "#B23A32";
 const COR_FALTAS = "#2C3230";
 // Rampa sequencial de um só tom, do claro ao escuro.
-const RAMPA_VERDE = ["#CFE5DA", "#9FCBB5", "#62A386", "#2F7A60", "#0F5C4A"];
+const RAMPA_VERDE = ["#D3EEEA", "#9ED8D0", "#5DB9AE", "#23958A", "#0C5751"];
 
 const PERIODOS: Record<Periodo, { rotulo: string; descricao: string; quantos: number }> = {
   dias: { rotulo: "Por dia", descricao: "Últimos 14 dias", quantos: 14 },

@@ -80,7 +80,7 @@ const aEspecialidade = (r: Linha): Especialidade => ({ id: r.id, nome: r.nome, d
 
 const aMedico = (r: Linha): Medico => ({
   id: r.id,
-  userId: r.user_id,
+  userId: r.user_id ?? null,
   titulo: r.titulo,
   nome: r.nome,
   especialidadeId: r.specialty_id,
@@ -89,7 +89,7 @@ const aMedico = (r: Linha): Medico => ({
   fotoUrl: r.foto_url,
   activo: r.activo,
   duracaoMin: r.duracao_min,
-  podeEditarDisponibilidade: r.pode_editar_disponibilidade,
+  podeEditarDisponibilidade: r.pode_editar_disponibilidade ?? false,
 });
 
 const aHorario = (r: Linha): HorarioTrabalho => ({ id: r.id, medicoId: r.doctor_id, diaSemana: r.dia_semana, inicio: hhmm(r.inicio), fim: hhmm(r.fim) });
@@ -98,7 +98,7 @@ const aBloqueio = (r: Linha): Bloqueio => ({ id: r.id, medicoId: r.doctor_id, in
 
 const aPaciente = (r: Linha): Paciente => ({
   id: r.id,
-  userId: r.user_id,
+  userId: r.user_id ?? null,
   nome: r.nome,
   telefone: r.telefone ?? "",
   dataNascimento: r.data_nascimento,
@@ -108,7 +108,7 @@ const aPaciente = (r: Linha): Paciente => ({
 
 const aNotificacao = (r: Linha): Notificacao => ({
   id: r.id,
-  userId: r.user_id,
+  userId: r.user_id ?? null,
   tipo: r.tipo,
   titulo: r.titulo,
   corpo: r.corpo,
@@ -122,6 +122,7 @@ const aNotificacao = (r: Linha): Notificacao => ({
 
 // Em doctors só se lêem colunas públicas; telefone e email vêm de medicos_completos() (equipa).
 const COLUNAS_MEDICO = "id,user_id,titulo,nome,specialty_id,foto_url,activo,duracao_min,pode_editar_disponibilidade";
+const COLUNAS_MEDICO_PUBLICAS = "id,titulo,nome,specialty_id,foto_url,activo,duracao_min";
 const SELECCAO_CONSULTA = "*, patient:patients(id,nome,telefone,data_nascimento), doctor:doctors(id,titulo,nome,foto_url), specialty:specialties(id,nome,icone)";
 
 export class RepositorioSupabase implements Repositorio {
@@ -286,7 +287,8 @@ export class RepositorioSupabase implements Repositorio {
   async medicos() {
     const u = await this.utilizador();
     const equipa = u?.papel === "rececao" || u?.papel === "admin";
-    const linhas = equipa ? await ler(this.sb.rpc("medicos_completos")) : await ler(this.sb.from("doctors").select(COLUNAS_MEDICO).order("nome"));
+    // Sem sessão (página inicial) só se lêem as colunas públicas dos médicos activos.
+    const linhas = equipa ? await ler(this.sb.rpc("medicos_completos")) : await ler(this.sb.from("doctors").select(u ? COLUNAS_MEDICO : COLUNAS_MEDICO_PUBLICAS).order("nome"));
     return (linhas as Linha[]).map(aMedico);
   }
 

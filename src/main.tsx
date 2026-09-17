@@ -1,7 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "@fontsource-variable/atkinson-hyperlegible-next";
-import "@fontsource-variable/newsreader";
+import "@fontsource-variable/raleway";
 import "./index.css";
 import { iniciarRepositorio } from "./lib/dados";
 import { App } from "./App";

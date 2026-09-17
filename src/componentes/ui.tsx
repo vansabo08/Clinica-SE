@@ -18,7 +18,7 @@ export const cx = clsx;
 // Botões
 // ------------------------------------------------------------
 
-type Variante = "primario" | "secundario" | "fantasma" | "perigo" | "suave" | "perigo-suave" | "claro" | "fantasma-claro";
+type Variante = "primario" | "secundario" | "contorno" | "fantasma" | "perigo" | "suave" | "perigo-suave" | "claro" | "fantasma-claro" | "vidro";
 type Tamanho = "sm" | "md" | "lg" | "xl";
 
 const VARIANTES: Record<Variante, string> = {
@@ -26,6 +26,9 @@ const VARIANTES: Record<Variante, string> = {
   /** Sobre fundo verde-escuro. */
   claro: "bg-white text-esperanca-800 hover:bg-esperanca-50",
   "fantasma-claro": "text-white hover:bg-white/10",
+  /** Sobre fotografia. */
+  vidro: "vidro-foto text-white hover:bg-white/25",
+  contorno: "border-2 border-esperanca text-esperanca hover:bg-esperanca hover:text-white",
   secundario: "border border-linha-forte bg-white text-tinta hover:border-esperanca-300 hover:bg-esperanca-50",
   fantasma: "text-esperanca hover:bg-esperanca-50",
   suave: "bg-esperanca-50 text-esperanca hover:bg-esperanca-100",
@@ -34,10 +37,10 @@ const VARIANTES: Record<Variante, string> = {
 };
 
 const TAMANHOS: Record<Tamanho, string> = {
-  sm: "h-9 rounded-[10px] px-3 text-sm",
-  md: "h-11 rounded-botao px-4 text-base",
-  lg: "h-[52px] rounded-botao px-5 text-base",
-  xl: "h-16 rounded-cartao px-6 text-lg",
+  sm: "h-9 rounded-full px-4 text-sm",
+  md: "h-11 rounded-full px-5 text-base",
+  lg: "h-[52px] rounded-full px-6 text-base",
+  xl: "h-16 rounded-full px-8 text-lg",
 };
 
 /** O aspecto de um botão, para ligações (<a>) que se comportam como botões. */
@@ -193,7 +196,7 @@ export function Filtro({ rotulo, className, children, ...resto }: SelectHTMLAttr
     <div className={cx("relative", className)}>
       <select
         aria-label={rotulo}
-        className="h-10 w-full appearance-none rounded-[10px] border border-linha-forte bg-white pl-3 pr-9 text-sm font-semibold text-tinta focus:border-esperanca focus:outline-none focus:ring-4 focus:ring-esperanca/10"
+        className="h-10 w-full appearance-none rounded-full border border-linha-forte bg-white pl-4 pr-9 text-sm font-semibold text-tinta focus:border-esperanca focus:outline-none focus:ring-4 focus:ring-esperanca/10"
         {...resto}
       >
         {children}
@@ -247,7 +250,7 @@ export function Segmentado<T extends string>({
   className?: string;
 }) {
   return (
-    <div role="radiogroup" aria-label={rotulo} className={cx("inline-flex gap-1 rounded-botao bg-[#E8EEEB] p-1", larguraTotal && "flex w-full", className)}>
+    <div role="radiogroup" aria-label={rotulo} className={cx("inline-flex gap-1 rounded-full bg-[#E4EFED] p-1", larguraTotal && "flex w-full", className)}>
       {opcoes.map((o) => {
         const activo = o.valor === valor;
         return (
@@ -258,9 +261,9 @@ export function Segmentado<T extends string>({
             aria-checked={activo}
             onClick={() => aoMudar(o.valor)}
             className={cx(
-              "h-9 whitespace-nowrap rounded-[9px] px-3.5 text-sm font-semibold transition-colors duration-150",
+              "h-9 whitespace-nowrap rounded-full px-4 text-sm font-semibold transition-colors duration-150",
               larguraTotal && "flex-1",
-              activo ? "bg-white text-tinta shadow-[0_1px_2px_rgba(16,42,35,0.1),0_0_0_1px_rgba(16,42,35,0.04)]" : "text-grafite hover:text-tinta",
+              activo ? "bg-white text-esperanca-800 shadow-[0_1px_2px_rgba(12,87,81,0.12),0_0_0_1px_rgba(12,87,81,0.05)]" : "text-grafite hover:text-tinta",
             )}
           >
             {o.rotulo}
@@ -319,7 +322,7 @@ export function EtiquetaEstado({ estado, curto, className }: { estado: EstadoCon
 }
 
 const TONS_AVATAR = [
-  "bg-[#E0EEE7] text-[#0B4B3C]",
+  "bg-esperanca-100 text-esperanca-800",
   "bg-[#E4EBF3] text-[#2B4766]",
   "bg-[#F0EBE2] text-[#654C2C]",
   "bg-[#EAE6F1] text-[#4D3E6E]",
@@ -355,7 +358,7 @@ export function Vazio({ icone, titulo, texto, children, className }: { icone?: R
 }
 
 export function Esqueleto({ className }: { className?: string }) {
-  return <div className={cx("animate-pulse rounded-cartao bg-[#E6ECE9]", className)} aria-hidden="true" />;
+  return <div className={cx("animate-pulse rounded-cartao bg-[#E3EEEC]", className)} aria-hidden="true" />;
 }
 
 export function CabecalhoPagina({ titulo, texto, accoes, antes }: { titulo: string; texto?: ReactNode; accoes?: ReactNode; antes?: ReactNode }) {

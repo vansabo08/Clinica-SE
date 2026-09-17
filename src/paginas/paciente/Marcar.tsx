@@ -247,7 +247,7 @@ export function Marcar() {
                 medico={medico}
                 ignorar={original ? { inicio: original.inicio } : null}
                 vagaActual={original?.inicio}
-                diaInicial={inicio ? diaDe(inicio) : original ? diaDe(original.inicio) : null}
+                diaInicial={inicio ? diaDe(inicio) : original ? diaDe(original.inicio) : params.get("dia")}
                 aoEscolher={(v) => {
                   setInicio(v.inicio);
                   setAlertaHorario(null);
