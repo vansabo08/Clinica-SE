@@ -3,9 +3,11 @@ import { createRoot } from "react-dom/client";
 import "@fontsource-variable/raleway";
 import "./index.css";
 import { iniciarRepositorio } from "./lib/dados";
+import { prepararSom } from "./lib/som";
 import { App } from "./App";
 
 const raiz = createRoot(document.getElementById("raiz")!);
+prepararSom();
 
 iniciarRepositorio().then(
   () =>

@@ -26,9 +26,9 @@ export function LinhaConsulta({ c, para }: { c: ConsultaDetalhada; para: string 
           {c.especialidade.nome}
           {c.parentesco ? `, para ${primeiroNome(c.paciente.nome)}` : ""}
         </p>
-        <EtiquetaEstado estado={c.estado} curto className="mt-1.5 sm:hidden" />
+        <EtiquetaEstado estado={c.estado} recusada={c.recusada} curto className="mt-1.5 sm:hidden" />
       </div>
-      <EtiquetaEstado estado={c.estado} className="hidden sm:inline-flex" />
+      <EtiquetaEstado estado={c.estado} recusada={c.recusada} className="hidden sm:inline-flex" />
     </Link>
   );
 }
@@ -76,7 +76,7 @@ export function Consultas() {
           <Esqueleto className="h-64" />
         ) : aba === "proximas" ? (
           proximas.length ? (
-            <ul className="cartao divide-y divide-linha overflow-hidden">
+            <ul className="cartao anim-lista divide-y divide-linha overflow-hidden">
               {proximas.map((c) => (
                 <li key={c.id}>
                   <LinhaConsulta c={c} para={`/consultas/${c.id}`} />
@@ -95,7 +95,7 @@ export function Consultas() {
             {[...meses.entries()].map(([mes, lista]) => (
               <section key={mes}>
                 <h2 className="mb-2 text-sm font-semibold text-grafite">{mes}</h2>
-                <ul className="cartao divide-y divide-linha overflow-hidden">
+                <ul className="cartao anim-lista divide-y divide-linha overflow-hidden">
                   {lista.map((c) => (
                     <li key={c.id}>
                       <LinhaConsulta c={c} para={`/consultas/${c.id}`} />

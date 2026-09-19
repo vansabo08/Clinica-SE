@@ -1,22 +1,35 @@
-import { Bell, BellRing, CalendarCheck, CalendarClock, CalendarPlus, CalendarX2, Sparkles, type LucideProps } from "lucide-react";
-import { useEffect, useRef, type ComponentType } from "react";
+import { Bell, Volume2, VolumeX } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
+import { ICONES_NOTIFICACAO } from "../componentes/icones";
 import { Pagina } from "../componentes/Shell";
 import { Botao, CabecalhoPagina, Esqueleto, Vazio, cx } from "../componentes/ui";
 import { repo } from "../lib/dados";
 import { useSessao } from "../lib/sessao";
+import { destinoNotificacao } from "../lib/notificacoes";
+import { definirSom, somLigado, tocarNotificacao } from "../lib/som";
 import { haQuanto } from "../lib/tempo";
-import type { Notificacao, TipoNotificacao } from "../lib/tipos";
+import type { Notificacao } from "../lib/tipos";
 import { useAgora, useDados } from "../lib/usarDados";
 
-const ICONES: Record<TipoNotificacao, ComponentType<LucideProps>> = {
-  lembrete: BellRing,
-  marcacao: CalendarPlus,
-  confirmacao: CalendarCheck,
-  reagendamento: CalendarClock,
-  cancelamento: CalendarX2,
-  vaga: Sparkles,
-};
+function BotaoSom() {
+  const [ligado, setLigado] = useState(somLigado);
+  return (
+    <Botao
+      variante="secundario"
+      tamanho="sm"
+      aria-pressed={ligado}
+      icone={ligado ? <Volume2 /> : <VolumeX />}
+      onClick={() => {
+        definirSom(!ligado);
+        setLigado(!ligado);
+        if (!ligado) tocarNotificacao(true);
+      }}
+    >
+      {ligado ? "Som ligado" : "Som desligado"}
+    </Botao>
+  );
+}
 
 export function Notificacoes() {
   const { utilizador } = useSessao();
@@ -35,23 +48,29 @@ export function Notificacoes() {
     return () => clearTimeout(t);
   }, [dados]);
 
-  const abrirConsulta = (n: Notificacao) => navigate(paciente ? `/consultas/${n.consultaId}` : `/rececao?consulta=${n.consultaId}`);
+  const abrirConsulta = (n: Notificacao) => navigate(destinoNotificacao(n, utilizador?.papel));
   const novas = porLer.current?.size ?? dados?.filter((n) => !n.lidaEm).length ?? 0;
 
   return (
     <Pagina largura="estreita">
-      <CabecalhoPagina titulo="Notificações" texto={dados ? (novas ? `${novas} ${novas === 1 ? "nova" : "novas"}` : "Está tudo visto.") : undefined} />
+      <CabecalhoPagina titulo="Notificações" texto={dados ? (novas ? `${novas} ${novas === 1 ? "nova" : "novas"}` : "Está tudo visto.") : undefined} accoes={<BotaoSom />} />
 
       {!dados ? (
         <Esqueleto className="h-72" />
       ) : dados.length === 0 ? (
         <div className="cartao">
-          <Vazio icone={<Bell />} titulo="Sem notificações" texto={paciente ? "Lembretes, confirmações e vagas que abrirem aparecem aqui." : "As marcações feitas pela aplicação aparecem aqui."} />
+          <Vazio icone={<Bell />} titulo="Sem notificações" texto={
+              paciente
+                ? "Lembretes, confirmações e vagas que abrirem aparecem aqui."
+                : utilizador?.papel === "medico"
+                  ? "As consultas novas, reagendadas e canceladas da sua agenda aparecem aqui."
+                  : "As marcações feitas pela aplicação aparecem aqui."
+            } />
         </div>
       ) : (
-        <ul className="cartao divide-y divide-linha overflow-hidden">
+        <ul className="cartao anim-lista divide-y divide-linha overflow-hidden">
           {dados.map((n) => {
-            const Icone = ICONES[n.tipo];
+            const Icone = ICONES_NOTIFICACAO[n.tipo];
             const nova = porLer.current?.has(n.id) ?? !n.lidaEm;
             const vagaViva = n.tipo === "vaga" && paciente && n.dados?.inicio && Date.parse(n.dados.inicio) > agora.getTime();
             return (

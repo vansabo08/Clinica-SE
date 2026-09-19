@@ -200,7 +200,7 @@ export function Medicos() {
         ))}
       </Filtro>
 
-      <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <ul className="anim-lista grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {lista.map((m) => {
           const horario = resumoHorario(dados.horarios.filter((h) => h.medicoId === m.id));
           const nome = `${m.titulo} ${m.nome}`;

@@ -47,7 +47,7 @@ export function EscolhaMedico({
     );
 
   return (
-    <ul className="space-y-3">
+    <ul className="anim-lista space-y-3">
       {dados.map(({ medico, vaga }) => {
         const nome = `${medico.titulo} ${medico.nome}`;
         return (

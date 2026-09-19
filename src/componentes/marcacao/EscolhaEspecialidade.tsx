@@ -14,7 +14,7 @@ export function EscolhaEspecialidade({ especialidades, medicos, aoEscolher }: { 
   const escondidas = especialidades.slice(visiveis.length);
 
   return (
-    <ul className="cartao divide-y divide-linha overflow-hidden">
+    <ul className="cartao anim-lista divide-y divide-linha overflow-hidden">
       {visiveis.map((e) => {
         const n = activos(e.id);
         return (

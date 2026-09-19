@@ -1,5 +1,15 @@
-import { Baby, Bone, Eye, Flower2, HeartPulse, ScanFace, Shapes, Stethoscope, type LucideProps } from "lucide-react";
+import { Baby, BellRing, Bone, CalendarCheck, CalendarClock, CalendarPlus, CalendarX2, Eye, Flower2, HeartPulse, ScanFace, Shapes, Sparkles, Stethoscope, type LucideProps } from "lucide-react";
 import type { ComponentType } from "react";
+import type { TipoNotificacao } from "../lib/tipos";
+
+export const ICONES_NOTIFICACAO: Record<TipoNotificacao, ComponentType<LucideProps>> = {
+  lembrete: BellRing,
+  marcacao: CalendarPlus,
+  confirmacao: CalendarCheck,
+  reagendamento: CalendarClock,
+  cancelamento: CalendarX2,
+  vaga: Sparkles,
+};
 
 /** O Lucide não tem dente; desenhado com as mesmas regras de traço. */
 function Dente({ size = 24, strokeWidth = 2, className }: LucideProps) {

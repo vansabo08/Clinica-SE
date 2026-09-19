@@ -17,7 +17,7 @@ import { linkWhatsApp, mensagens } from "../../lib/whatsapp";
 import { paraQuem } from "./Inicio";
 
 const EXPLICACAO: Record<EstadoConsulta, string> = {
-  aguardando: "A clínica ainda vai confirmar esta consulta. Recebe um aviso quando isso acontecer.",
+  aguardando: "O médico ou a clínica ainda vão confirmar esta consulta. Recebe um aviso quando isso acontecer.",
   confirmada: "Está tudo certo. Chegue 10 minutos antes; recebe um lembrete 24 horas antes.",
   em_atendimento: "Está a ser atendido neste momento.",
   concluida: "Consulta concluída.",
@@ -79,9 +79,28 @@ export function ConsultaPaciente() {
         estado={c.estado}
         paraQuem={paraQuem(c)}
         riscada={c.estado === "cancelada"}
+        recusada={c.recusada}
       />
 
-      <p className="mt-4 text-grafite">{EXPLICACAO[c.estado]}</p>
+      {c.recusada ? (
+        <div className="anim-surgir mt-4 rounded-[24px] border border-estado-ambar/25 bg-estado-ambar-fundo p-4">
+          <p className="font-bold text-tinta">
+            {c.medico.titulo} {c.medico.nome} não pode atender neste horário.
+          </p>
+          {c.motivoRecusa && <p className="mt-1 text-grafite">Motivo: {c.motivoRecusa}</p>}
+          <p className="mt-1 text-grafite">O horário ficou livre. Escolha outro dia ou outro médico; é rápido.</p>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            <Botao tamanho="lg" icone={<CalendarPlus className="h-5 w-5" />} onClick={() => navigate(`/marcar?medico=${c.medicoId}&para=${c.pacienteId}`)}>
+              Escolher outro horário
+            </Botao>
+            <Botao tamanho="lg" variante="secundario" onClick={() => navigate(`/marcar?especialidade=${c.especialidadeId}&para=${c.pacienteId}`)}>
+              Outro médico de {c.especialidade.nome}
+            </Botao>
+          </div>
+        </div>
+      ) : (
+        <p className="mt-4 text-grafite">{EXPLICACAO[c.estado]}</p>
+      )}
       {c.reagendadaDe && <p className="mt-1 text-sm text-grafite">Reagendada: estava marcada para {quandoCurto(c.reagendadaDe)}.</p>}
 
       {alteravel && (
@@ -94,7 +113,7 @@ export function ConsultaPaciente() {
           </Botao>
         </div>
       )}
-      {terminou && (
+      {terminou && !c.recusada && (
         <Botao tamanho="lg" variante="secundario" className="mt-5" icone={<CalendarPlus className="h-5 w-5" />} onClick={() => navigate(`/marcar?medico=${c.medicoId}&para=${c.pacienteId}`)}>
           Marcar nova consulta com {c.medico.titulo} {c.medico.nome.split(" ")[0]}
         </Botao>

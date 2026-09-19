@@ -385,6 +385,8 @@ export class RepositorioSupabase implements Repositorio {
       confirmadaEm: iso(l.confirmada_em),
       canceladaEm: iso(l.cancelada_em),
       reagendadaDe: iso(l.reagendada_de),
+      recusada: l.recusada ?? false,
+      motivoRecusa: l.motivo_recusa ?? "",
       paciente: { id: l.patient.id, nome: l.patient.nome, telefone: l.patient.telefone ?? "", dataNascimento: l.patient.data_nascimento },
       medico: { id: l.doctor.id, titulo: l.doctor.titulo, nome: l.doctor.nome, fotoUrl: l.doctor.foto_url },
       especialidade: { id: l.specialty.id, nome: l.specialty.nome, icone: l.specialty.icone },
@@ -437,6 +439,11 @@ export class RepositorioSupabase implements Repositorio {
 
   async mudarEstado(id: string, estado: EstadoConsulta) {
     await ler(this.sb.rpc("mudar_estado_consulta", { p_id: id, p_estado: estado }));
+    this.emitir(["consultas", "notificacoes"]);
+  }
+
+  async recusar(id: string, motivo: string) {
+    await ler(this.sb.rpc("recusar_consulta", { p_id: id, p_motivo: motivo.trim() }));
     this.emitir(["consultas", "notificacoes"]);
   }
 

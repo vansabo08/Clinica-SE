@@ -46,7 +46,7 @@ const TAMANHOS: Record<Tamanho, string> = {
 /** O aspecto de um botão, para ligações (<a>) que se comportam como botões. */
 export function estiloBotao({ variante = "primario", tamanho = "md", larguraTotal, className }: { variante?: Variante; tamanho?: Tamanho; larguraTotal?: boolean; className?: string } = {}) {
   return cx(
-    "inline-flex select-none items-center justify-center gap-2 whitespace-nowrap font-semibold transition-[background-color,border-color,color,transform] duration-150 ease-suave active:scale-[0.98] [&_svg]:h-5 [&_svg]:w-5 [&_svg]:shrink-0",
+    "inline-flex select-none items-center justify-center gap-2 whitespace-nowrap font-semibold transition-[background-color,border-color,color,transform,box-shadow] duration-200 ease-suave hover:-translate-y-px active:translate-y-0 active:scale-[0.97] [&_svg]:h-5 [&_svg]:w-5 [&_svg]:shrink-0",
     TAMANHOS[tamanho],
     VARIANTES[variante],
     larguraTotal && "w-full",
@@ -73,7 +73,7 @@ export const Botao = forwardRef<HTMLButtonElement, PropsBotao>(function Botao(
       disabled={disabled || aCarregar}
       aria-busy={aCarregar || undefined}
       className={cx(
-        "inline-flex select-none items-center justify-center gap-2 whitespace-nowrap font-semibold transition-[background-color,border-color,color,transform] duration-150 ease-suave active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex select-none items-center justify-center gap-2 whitespace-nowrap font-semibold transition-[background-color,border-color,color,transform,box-shadow] duration-200 ease-suave hover:-translate-y-px active:translate-y-0 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50",
         TAMANHOS[tamanho],
         VARIANTES[variante],
         larguraTotal && "w-full",
@@ -307,8 +307,9 @@ export function Fichas<T extends string>({ opcoes, valor, aoMudar, rotulo }: { o
 // Pequenas peças
 // ------------------------------------------------------------
 
-export function EtiquetaEstado({ estado, curto, className }: { estado: EstadoConsulta; curto?: boolean; className?: string }) {
+export function EtiquetaEstado({ estado, curto, recusada, className }: { estado: EstadoConsulta; curto?: boolean; recusada?: boolean; className?: string }) {
   const info = ESTADOS[estado];
+  const texto = estado === "cancelada" && recusada ? (curto ? "Não confirmada" : "Não confirmada pelo médico") : curto ? info.curto : info.rotulo;
   return (
     <span className={cx("inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold", info.etiqueta, className)}>
       {estado === "concluida" ? (
@@ -316,7 +317,7 @@ export function EtiquetaEstado({ estado, curto, className }: { estado: EstadoCon
       ) : (
         <span className={cx("h-2 w-2 rounded-full", info.ponto)} aria-hidden="true" />
       )}
-      {curto ? info.curto : info.rotulo}
+      {texto}
     </span>
   );
 }
@@ -358,7 +359,7 @@ export function Vazio({ icone, titulo, texto, children, className }: { icone?: R
 }
 
 export function Esqueleto({ className }: { className?: string }) {
-  return <div className={cx("animate-pulse rounded-cartao bg-[#E3EEEC]", className)} aria-hidden="true" />;
+  return <div className={cx("esqueleto rounded-cartao", className)} aria-hidden="true" />;
 }
 
 export function CabecalhoPagina({ titulo, texto, accoes, antes }: { titulo: string; texto?: ReactNode; accoes?: ReactNode; antes?: ReactNode }) {

@@ -1,18 +1,127 @@
-import { Ban, CalendarX2, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { Ban, CalendarX2, Check, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router";
 import { DetalheConsulta } from "../../componentes/agenda/DetalheConsulta";
+import { FolhaRecusar } from "../../componentes/agenda/FolhaRecusar";
 import { mensagemDeErro, useAviso } from "../../componentes/Aviso";
-import { Pagina } from "../../componentes/Shell";
+import { Pagina, usePorConfirmar } from "../../componentes/Shell";
 import { Botao, BotaoIcone, Esqueleto, EtiquetaEstado, Vazio, cx } from "../../componentes/ui";
 import { repo } from "../../lib/dados";
 import { MOTIVOS_BLOQUEIO } from "../../lib/estados";
 import { textoIntervalo } from "../../lib/horario";
 import { primeiroNome, useUtilizador } from "../../lib/sessao";
-import { dataLonga, diaRelativo, hoje, horaDe, idadeLegivel, instanteISO, saudacao, somarDias } from "../../lib/tempo";
+import { DIAS_SEMANA_CURTOS, dataLonga, diaDaSemana, diaDe, diaRelativo, hoje, horaDe, idadeLegivel, instanteISO, nomeMesCurto, saudacao, somarDias } from "../../lib/tempo";
 import { plural } from "../../lib/texto";
-import type { EstadoConsulta } from "../../lib/tipos";
+import type { ConsultaDetalhada, EstadoConsulta } from "../../lib/tipos";
 import { useAgora, useDados } from "../../lib/usarDados";
+
+type Resposta = "confirmada" | "recusada";
+const VISIVEIS = 5;
+
+/** As consultas que aguardam o "sim" do médico, de hoje em diante. */
+function PorConfirmar({ medicoId, aoAbrir }: { medicoId: string; aoAbrir: (id: string) => void }) {
+  const avisar = useAviso();
+  const pendentes = usePorConfirmar(medicoId);
+  // As respondidas ficam um instante no sítio, com o resultado, antes de sair.
+  const [respondidas, setRespondidas] = useState<{ c: ConsultaDetalhada; como: Resposta }[]>([]);
+  const [aConfirmar, setAConfirmar] = useState<string | null>(null);
+  const [aRecusar, setARecusar] = useState<ConsultaDetalhada | null>(null);
+  const [todas, setTodas] = useState(false);
+
+  function responder(c: ConsultaDetalhada, como: Resposta) {
+    setRespondidas((r) => [...r.filter((x) => x.c.id !== c.id), { c, como }]);
+    setTimeout(() => setRespondidas((r) => r.filter((x) => x.c.id !== c.id)), 1700);
+  }
+
+  async function confirmar(c: ConsultaDetalhada) {
+    setAConfirmar(c.id);
+    try {
+      await repo().mudarEstado(c.id, "confirmada");
+      responder(c, "confirmada");
+      avisar(`Consulta de ${primeiroNome(c.paciente.nome)} confirmada. O paciente foi avisado.`);
+    } catch (e) {
+      avisar(mensagemDeErro(e), "erro");
+    } finally {
+      setAConfirmar(null);
+    }
+  }
+
+  const jaRespondidas = new Set(respondidas.map((r) => r.c.id));
+  const abertas = pendentes.filter((c) => !jaRespondidas.has(c.id));
+  const itens = [...abertas.map((c) => ({ c, como: null as Resposta | null })), ...respondidas].sort((a, b) => a.c.inicio.localeCompare(b.c.inicio));
+  if (itens.length === 0) return null;
+  const visiveis = todas ? itens : itens.slice(0, VISIVEIS);
+
+  return (
+    <section className="mt-6" aria-labelledby="titulo-por-confirmar">
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h2 id="titulo-por-confirmar" className="flex items-center gap-2 text-lg font-bold text-tinta">
+          Por confirmar
+          {abertas.length > 0 && (
+            <span key={abertas.length} className="num anim-pop inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-estado-ambar px-2 text-xs font-bold text-white">
+              {abertas.length}
+            </span>
+          )}
+        </h2>
+        <p className="text-sm text-grafite">O paciente é avisado da sua resposta.</p>
+      </div>
+      <ul className="anim-lista space-y-2.5">
+        {visiveis.map(({ c, como }) => {
+          const dia = diaDe(c.inicio);
+          return (
+            <li
+              key={c.id}
+              className={cx(
+                "rounded-[24px] border bg-white p-4 shadow-suave transition-colors duration-300 sm:p-5",
+                como === "confirmada" ? "anim-sair border-estado-verde/40 bg-estado-verde-fundo/60" : como === "recusada" ? "anim-sair border-estado-vermelho/30 bg-estado-vermelho-fundo/50" : "border-linha",
+              )}
+            >
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <button type="button" onClick={() => aoAbrir(c.id)} className="group flex min-w-0 flex-1 items-center gap-4 text-left">
+                  <span className="flex w-14 shrink-0 flex-col items-center rounded-[16px] bg-esperanca-50 py-2 text-esperanca-800">
+                    <span className="text-[11px] font-bold uppercase tracking-wide">{DIAS_SEMANA_CURTOS[diaDaSemana(dia)]}</span>
+                    <span className="num text-xl font-bold leading-6">{Number(dia.slice(8))}</span>
+                    <span className="text-[11px] font-semibold">{nomeMesCurto(dia)}</span>
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-lg font-bold text-tinta group-hover:text-esperanca">{c.paciente.nome}</span>
+                    <span className="block text-sm text-grafite">
+                      <span className="num font-semibold text-tinta">{horaDe(c.inicio)}</span>
+                      {["Hoje", "Amanhã"].includes(diaRelativo(dia)) ? `, ${diaRelativo(dia).toLowerCase()}` : ""}
+                      {c.primeiraVez ? ", primeira consulta" : ""}
+                    </span>
+                    {c.observacao && <span className="mt-0.5 block truncate text-sm text-grafite">{c.observacao}</span>}
+                  </span>
+                </button>
+                {como ? (
+                  <p className={cx("anim-surgir flex items-center gap-2 font-bold", como === "confirmada" ? "text-estado-verde" : "text-estado-vermelho")}>
+                    {como === "confirmada" ? <Check className="h-5 w-5" strokeWidth={3} aria-hidden="true" /> : <X className="h-5 w-5" strokeWidth={3} aria-hidden="true" />}
+                    {como === "confirmada" ? "Confirmada" : "Recusada"}
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2 sm:flex">
+                    <Botao variante="perigo-suave" className="border border-estado-vermelho/20" icone={<X className="h-4 w-4" />} disabled={aConfirmar === c.id} onClick={() => setARecusar(c)}>
+                      Recusar
+                    </Botao>
+                    <Botao icone={<Check className="h-4 w-4" />} aCarregar={aConfirmar === c.id} onClick={() => confirmar(c)}>
+                      Confirmar
+                    </Botao>
+                  </div>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+      {itens.length > VISIVEIS && (
+        <Botao variante="fantasma" className="mt-2" onClick={() => setTodas(!todas)}>
+          {todas ? "Mostrar só as próximas" : `Ver as ${itens.length} por confirmar`}
+        </Botao>
+      )}
+      <FolhaRecusar consulta={aRecusar} aoFechar={() => setARecusar(null)} aoRecusar={(c) => responder(c, "recusada")} />
+    </section>
+  );
+}
 
 const COR_PROGRESSO: Partial<Record<EstadoConsulta, string>> = {
   concluida: "bg-esperanca",
@@ -29,6 +138,17 @@ export function Hoje() {
   const dia = params.get("dia") ?? hojeD;
   const [consultaId, setConsultaId] = useState<string | null>(null);
   const [aMudar, setAMudar] = useState<EstadoConsulta | null>(null);
+
+  // Vindo de um aviso: abre logo a consulta.
+  const consultaPedida = params.get("consulta");
+  useEffect(() => {
+    if (!consultaPedida) return;
+    setConsultaId(consultaPedida);
+    const resto = new URLSearchParams(params);
+    resto.delete("consulta");
+    setParams(resto, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [consultaPedida]);
 
   const intervalo = { de: instanteISO(dia, "00:00"), ate: instanteISO(somarDias(dia, 1), "00:00") };
   const { dados: consultas } = useDados((r) => r.consultas({ medicoId: u.medicoId!, ...intervalo }), [dia], ["consultas"]);
@@ -74,7 +194,7 @@ export function Hoje() {
               <span className="block truncate font-bold text-tinta">{c.paciente.nome}</span>
               <span className="block truncate text-sm text-grafite">{c.observacao || (c.primeiraVez ? "Primeira consulta" : "Sem motivo indicado")}</span>
             </span>
-            <EtiquetaEstado estado={c.estado} curto />
+            <EtiquetaEstado estado={c.estado} recusada={c.recusada} curto />
           </button>
         </li>
       ),
@@ -120,6 +240,8 @@ export function Hoje() {
         )}
       </div>
       <p className="text-grafite">{dataLonga(dia)}</p>
+
+      <PorConfirmar medicoId={u.medicoId!} aoAbrir={setConsultaId} />
 
       {!consultas ? (
         <Esqueleto className="mt-6 h-72" />
@@ -190,7 +312,7 @@ export function Hoje() {
                 <Vazio icone={<CalendarX2 />} titulo="Sem consultas neste dia" texto="As marcações aparecem aqui assim que são feitas, sem recarregar." />
               </div>
             ) : (
-              <ul className="cartao divide-y divide-linha overflow-hidden">{itens.map((i) => i.no)}</ul>
+              <ul className="cartao anim-lista divide-y divide-linha overflow-hidden">{itens.map((i) => i.no)}</ul>
             )}
           </section>
         </>

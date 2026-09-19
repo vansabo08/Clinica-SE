@@ -20,6 +20,7 @@ export function Senha({
   accoes,
   className,
   riscada,
+  recusada,
 }: {
   medico: string;
   fotoMedico?: string | null;
@@ -32,6 +33,7 @@ export function Senha({
   accoes?: ReactNode;
   className?: string;
   riscada?: boolean;
+  recusada?: boolean;
 }) {
   const relativo = diaRelativo(dia);
   const perto = relativo === "Hoje" || relativo === "Amanhã";
@@ -43,7 +45,7 @@ export function Senha({
             <IconeEspecialidade icone={icone} className="h-[18px] w-[18px] shrink-0" />
             <span className="truncate">{especialidade}</span>
           </span>
-          {estado && <EtiquetaEstado estado={estado} />}
+          {estado && <EtiquetaEstado estado={estado} recusada={recusada} />}
         </div>
         <div className="mt-4 flex items-center gap-3">
           <Avatar nome={medico} foto={fotoMedico} tamanho="md" />

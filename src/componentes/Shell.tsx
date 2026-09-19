@@ -18,14 +18,16 @@ import {
   Users,
   type LucideProps,
 } from "lucide-react";
-import { Suspense, lazy, useState, type ComponentType, type ReactNode } from "react";
+import { Suspense, lazy, useMemo, useState, type ComponentType, type ReactNode } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { repo } from "../lib/dados";
 import { PAPEIS } from "../lib/estados";
+import { useNotificacoesAoVivo } from "../lib/notificacoes";
 import { ContextoNovoAgendamento, type PreenchimentoNovo } from "../lib/novoAgendamento";
 import { useSessao } from "../lib/sessao";
 import { useDados } from "../lib/usarDados";
 import { mensagemDeErro, useAviso } from "./Aviso";
+import { AvisoChegada } from "./AvisoChegada";
 import { Folha } from "./Folha";
 import { FolhaMudarSenha } from "./FolhaMudarSenha";
 import { Marca, Simbolo } from "./Marca";
@@ -41,6 +43,8 @@ interface ItemNav {
   contagem?: number;
   fim?: boolean;
   destaque?: boolean;
+  /** Muda quando chega um aviso: o ícone abana. */
+  agitar?: number;
 }
 
 export const LARGURA_BARRA = "lg:pl-[272px]";
@@ -73,7 +77,11 @@ export function EcraArranque() {
 
 function Contagem({ n, className }: { n: number; className?: string }) {
   if (!n) return null;
-  return <span className={cx("num inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-esperanca px-1.5 text-[11px] font-bold leading-none text-white", className)}>{n > 99 ? "99+" : n}</span>;
+  return (
+    <span key={n} className={cx("num anim-pop inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-esperanca px-1.5 text-[11px] font-bold leading-none text-white", className)}>
+      {n > 99 ? "99+" : n}
+    </span>
+  );
 }
 
 function LinkLateral({ item, escuro }: { item: ItemNav; escuro?: boolean }) {
@@ -91,7 +99,8 @@ function LinkLateral({ item, escuro }: { item: ItemNav; escuro?: boolean }) {
   const miolo = (activo: boolean) => (
     <>
       <item.Icone
-        className={cx("h-5 w-5 shrink-0", activo ? "text-esperanca" : escuro ? "text-esperanca-300 group-hover:text-white" : "text-nevoa group-hover:text-grafite")}
+        key={item.agitar}
+        className={cx("h-5 w-5 shrink-0", item.agitar && "anim-sino", activo ? "text-esperanca" : escuro ? "text-esperanca-300 group-hover:text-white" : "text-nevoa group-hover:text-grafite")}
         aria-hidden="true"
       />
       <span className="flex-1">{item.rotulo}</span>
@@ -201,7 +210,7 @@ function ItemInferior({ item }: { item: ItemNav }) {
   const miolo = (activo: boolean) => (
     <>
       <span className="relative">
-        <item.Icone className="h-[22px] w-[22px]" strokeWidth={activo ? 2.3 : 1.9} aria-hidden="true" />
+        <item.Icone key={item.agitar} className={cx("h-[22px] w-[22px]", item.agitar && "anim-sino")} strokeWidth={activo ? 2.3 : 1.9} aria-hidden="true" />
         {!!item.contagem && <Contagem n={item.contagem} className="absolute -right-2.5 -top-1.5 h-4 min-w-4 px-1 text-[10px]" />}
       </span>
       <span>{item.rotulo}</span>
@@ -249,20 +258,26 @@ function ItemDestaque({ item }: { item: ItemNav }) {
 // Paciente
 // ------------------------------------------------------------
 
-function useNaoLidas() {
-  const { dados } = useDados((r) => r.notificacoes(), [], ["notificacoes"]);
-  return dados?.filter((n) => !n.lidaEm).length ?? 0;
+/** O conteúdo de cada página entra com um deslize curto. */
+function Conteudo() {
+  const { pathname } = useLocation();
+  return (
+    <div key={pathname} className="anim-pagina">
+      <Outlet />
+    </div>
+  );
 }
 
 export function ShellPaciente() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const naoLidas = useNaoLidas();
+  const { utilizador } = useSessao();
+  const { naoLidas, chegada, fecharChegada } = useNotificacoesAoVivo();
   const noFluxo = pathname.startsWith("/marcar");
 
   const inicio: ItemNav = { para: "/inicio", rotulo: "Início", Icone: House };
   const consultas: ItemNav = { para: "/consultas", rotulo: "Consultas", Icone: CalendarDays };
-  const notificacoes: ItemNav = { para: "/notificacoes", rotulo: "Notificações", Icone: Bell, contagem: naoLidas };
+  const notificacoes: ItemNav = { para: "/notificacoes", rotulo: "Notificações", Icone: Bell, contagem: naoLidas, agitar: chegada?.chave };
   const perfil: ItemNav = { para: "/perfil", rotulo: "Perfil", Icone: UserRound };
 
   return (
@@ -282,11 +297,12 @@ export function ShellPaciente() {
       />
       <main className={cx(LARGURA_BARRA, noFluxo ? "pb-10" : "pb-36 lg:pb-16")}>
         <Suspense fallback={<CarregandoPagina />}>
-          <Outlet />
+          <Conteudo />
         </Suspense>
       </main>
       {!noFluxo && <BarraInferior itens={[inicio, consultas, { para: "/marcar", rotulo: "Marcar", Icone: Plus, destaque: true }, notificacoes, perfil]} />}
       <FolhaTelefone />
+      <AvisoChegada chegada={chegada} papel={utilizador?.papel} aoFechar={fecharChegada} />
     </div>
   );
 }
@@ -353,8 +369,17 @@ function FolhaTelefone() {
 // Receção e médicos
 // ------------------------------------------------------------
 
+/** Consultas do médico que ainda esperam a sua confirmação. */
+export function usePorConfirmar(medicoId: string | null | undefined) {
+  const desde = useMemo(() => new Date().toISOString(), []);
+  const { dados } = useDados((r) => (medicoId ? r.consultas({ medicoId, de: desde }) : Promise.resolve([])), [medicoId], ["consultas"]);
+  return useMemo(() => (dados ?? []).filter((c) => c.estado === "aguardando" && Date.parse(c.inicio) > Date.now()), [dados]);
+}
+
 export function ShellClinica({ tipo }: { tipo: "equipa" | "medico" }) {
-  const naoLidas = useNaoLidas();
+  const { utilizador } = useSessao();
+  const { naoLidas, chegada, fecharChegada } = useNotificacoesAoVivo();
+  const porConfirmar = usePorConfirmar(tipo === "medico" ? utilizador?.medicoId : null).length;
   const [novo, setNovo] = useState<PreenchimentoNovo | null>(null);
   const [mais, setMais] = useState(false);
   const { pathname } = useLocation();
@@ -372,20 +397,27 @@ export function ShellClinica({ tipo }: { tipo: "equipa" | "medico" }) {
     { para: "/rececao/estatisticas", rotulo: "Estatísticas", Icone: ChartColumn },
   ];
   const equipaSecundarios: ItemNav[] = [
-    { para: "/rececao/notificacoes", rotulo: "Notificações", Icone: Bell, contagem: naoLidas },
+    { para: "/rececao/notificacoes", rotulo: "Notificações", Icone: Bell, contagem: naoLidas, agitar: chegada?.chave },
     { para: "/rececao/clinica", rotulo: "Dados da clínica", Icone: Settings },
   ];
   const medico: ItemNav[] = [
-    { para: "/medico", rotulo: "Hoje", Icone: House, fim: true },
+    { para: "/medico", rotulo: "Hoje", Icone: House, fim: true, contagem: porConfirmar },
     { para: "/medico/agenda", rotulo: "Agenda", Icone: CalendarRange },
+    { para: "/medico/notificacoes", rotulo: "Notificações", Icone: Bell, contagem: naoLidas, agitar: chegada?.chave },
     { para: "/medico/disponibilidade", rotulo: "Disponibilidade", Icone: CalendarClock },
   ];
 
-  const itensMais = tipo === "equipa" ? [...equipa.slice(2, 4), equipa[5], ...equipaSecundarios] : [];
+  const itensMais = tipo === "equipa" ? [...equipa.slice(2, 4), equipa[5], ...equipaSecundarios] : [medico[3]];
   const inferior: ItemNav[] =
     tipo === "equipa"
-      ? [equipa[0], equipa[1], { rotulo: "Novo", Icone: Plus, destaque: true, aoCarregar: () => abrirNovo() }, { ...equipa[4], rotulo: "Espera" }, { rotulo: "Mais", Icone: Ellipsis, aoCarregar: () => setMais(true), contagem: naoLidas }]
-      : [...medico, { rotulo: "Conta", Icone: UserRound, aoCarregar: () => setMais(true) }];
+      ? [
+          equipa[0],
+          equipa[1],
+          { rotulo: "Novo", Icone: Plus, destaque: true, aoCarregar: () => abrirNovo() },
+          { ...equipa[4], rotulo: "Espera" },
+          { rotulo: "Mais", Icone: Ellipsis, aoCarregar: () => setMais(true), contagem: naoLidas, agitar: chegada?.chave },
+        ]
+      : [medico[0], medico[1], { ...medico[2], rotulo: "Avisos" }, { rotulo: "Conta", Icone: UserRound, aoCarregar: () => setMais(true) }];
 
   return (
     <ContextoNovoAgendamento.Provider value={abrirNovo}>
@@ -403,10 +435,11 @@ export function ShellClinica({ tipo }: { tipo: "equipa" | "medico" }) {
         />
         <main className={cx(LARGURA_BARRA, "pb-36 lg:pb-16")}>
           <Suspense fallback={<CarregandoPagina />}>
-            <Outlet />
+            <Conteudo />
           </Suspense>
         </main>
         <BarraInferior itens={inferior} />
+        <AvisoChegada chegada={chegada} papel={utilizador?.papel} aoFechar={fecharChegada} />
 
         <Folha aberta={mais} aoFechar={() => setMais(false)} titulo={tipo === "equipa" ? "Mais" : "A sua conta"} largura="sm">
           <ul className="-mx-2 space-y-1" onClick={() => setMais(false)}>

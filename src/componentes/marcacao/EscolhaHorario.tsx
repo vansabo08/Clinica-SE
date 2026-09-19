@@ -198,7 +198,7 @@ export function EscolhaHorario({
           grupos.map((g) => (
             <div key={g.rotulo} className="mt-4">
               <p className="mb-2 text-sm font-semibold text-grafite">{g.rotulo}</p>
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+              <div className="anim-lista grid grid-cols-3 gap-2 sm:grid-cols-4">
                 {g.vagas.map((v) => {
                   const tirada = !livres.some((l) => l.inicio === v.inicio);
                   const actual = v.inicio === vagaActual;

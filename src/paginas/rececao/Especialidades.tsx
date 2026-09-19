@@ -86,7 +86,7 @@ export function Especialidades() {
       {!dados ? (
         <Esqueleto className="h-96" />
       ) : (
-        <ul className="cartao divide-y divide-linha overflow-hidden">
+        <ul className="cartao anim-lista divide-y divide-linha overflow-hidden">
           {lista.map((e, i) => {
             const n = dados.medicos.filter((m) => m.especialidadeId === e.id && m.activo).length;
             return (

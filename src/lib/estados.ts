@@ -74,10 +74,13 @@ export const TRANSICOES: Record<EstadoConsulta, EstadoConsulta[]> = {
 
 /** O que o médico pode fazer na sua agenda. */
 export const TRANSICOES_MEDICO: Partial<Record<EstadoConsulta, EstadoConsulta[]>> = {
-  aguardando: ["em_atendimento", "faltou"],
+  aguardando: ["confirmada", "em_atendimento", "faltou"],
   confirmada: ["em_atendimento", "faltou"],
   em_atendimento: ["concluida"],
 };
+
+/** Motivos rápidos para o médico recusar uma consulta. */
+export const MOTIVOS_RECUSA = ["Não estarei disponível nesse horário", "A consulta não é da minha especialidade", "Preciso de mais tempo para este caso"];
 
 /** Nome da acção que leva a cada estado (verbo no botão). */
 export const ACCAO_PARA: Record<EstadoConsulta, string> = {

@@ -10,6 +10,7 @@ interface Base {
 }
 
 const para = (b: Base) => (b.paciente ? ` de ${b.paciente}` : "");
+const motivo = (m: string) => (m.trim() ? ` Motivo: ${m.trim()}.` : "");
 
 export const textos = {
   marcacao: (b: Base) => ({
@@ -39,6 +40,37 @@ export const textos = {
   vaga: (b: Base) => ({
     titulo: "Abriu uma vaga",
     corpo: `Ficou livre um horário com ${b.medico} a ${dataCurta(diaDe(b.inicio))}, às ${horaDe(b.inicio)}. Quem marcar primeiro fica com ele.`,
+  }),
+  confirmacaoMedico: (b: Base) => ({
+    titulo: "Consulta confirmada",
+    corpo: `${b.medico} confirmou a consulta${para(b)} a ${dataLonga(diaDe(b.inicio))}, às ${horaDe(b.inicio)}.`,
+  }),
+  recusa: (b: Base & { motivo: string }) => ({
+    titulo: "Consulta não confirmada",
+    corpo: `${b.medico} não pode atender a consulta${para(b)} de ${dataCurta(diaDe(b.inicio))}, às ${horaDe(b.inicio)}.${motivo(b.motivo)} Escolha outro horário na aplicação.`,
+  }),
+  recusaEquipa: (b: Base & { pacienteNome: string; motivo: string }) => ({
+    titulo: "Consulta recusada pelo médico",
+    corpo: `${b.medico} recusou a consulta de ${b.pacienteNome} de ${dataCurta(diaDe(b.inicio))}, às ${horaDe(b.inicio)}.${motivo(b.motivo)}`,
+  }),
+  // Para o médico
+  novaParaMedico: (b: { pacienteNome: string; inicio: string; porConfirmar: boolean }) =>
+    b.porConfirmar
+      ? {
+          titulo: "Nova consulta por confirmar",
+          corpo: `${b.pacienteNome} marcou consulta para ${dataCurta(diaDe(b.inicio))}, às ${horaDe(b.inicio)}. Confirme ou recuse.`,
+        }
+      : {
+          titulo: "Nova consulta na agenda",
+          corpo: `${b.pacienteNome} tem consulta consigo a ${dataCurta(diaDe(b.inicio))}, às ${horaDe(b.inicio)}.`,
+        },
+  reagendadaParaMedico: (b: { pacienteNome: string; inicio: string; porConfirmar: boolean }) => ({
+    titulo: "Consulta reagendada",
+    corpo: `A consulta de ${b.pacienteNome} passou para ${dataCurta(diaDe(b.inicio))}, às ${horaDe(b.inicio)}.${b.porConfirmar ? " Confirme ou recuse." : ""}`,
+  }),
+  canceladaParaMedico: (b: { pacienteNome: string; inicio: string }) => ({
+    titulo: "Consulta cancelada",
+    corpo: `A consulta de ${b.pacienteNome} de ${dataCurta(diaDe(b.inicio))}, às ${horaDe(b.inicio)}, foi cancelada. O horário ficou livre.`,
   }),
   novaMarcacaoApp: (b: Base & { pacienteNome: string }) => ({
     titulo: "Nova marcação pela aplicação",

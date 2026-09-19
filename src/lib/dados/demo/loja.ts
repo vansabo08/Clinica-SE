@@ -294,6 +294,15 @@ export class RepositorioDemo implements Repositorio {
     return this.titularDe(e, pacienteId)?.userId ?? null;
   }
 
+  private nomePaciente(e: EstadoDemo, pacienteId: string) {
+    return e.pacientes.find((p) => p.id === pacienteId)?.nome ?? "Um paciente";
+  }
+
+  /** A conta do médico, para os avisos (só os que já entram na aplicação). */
+  private contaDoMedico(e: EstadoDemo, medicoId: string) {
+    return e.utilizadores.find((x) => x.medicoId === medicoId)?.id ?? null;
+  }
+
   private nomeMedico(e: EstadoDemo, medicoId: string) {
     const m = e.medicos.find((x) => x.id === medicoId);
     return m ? `${m.titulo} ${m.nome}` : "o médico";
@@ -615,18 +624,21 @@ export class RepositorioDemo implements Repositorio {
         confirmadaEm: estado === "confirmada" ? agora : null,
         canceladaEm: null,
         reagendadaDe: null,
+        recusada: false,
+        motivoRecusa: "",
       };
       e.consultas.push(c);
 
       const base = this.baseTexto(e, c);
       this.notificar(e, this.userDoPaciente(e, c.pacienteId), estado === "confirmada" ? "confirmacao" : "marcacao", estado === "confirmada" ? textos.confirmacao(base) : textos.marcacao(base), { consultaId: c.id });
       this.criarLembretes(e, c);
+      const pacienteNome = this.nomePaciente(e, c.pacienteId);
       if (!equipa) {
-        const pacienteNome = e.pacientes.find((p) => p.id === c.pacienteId)!.nome;
         for (const s of e.utilizadores.filter((x) => eEquipa(x.papel))) {
           this.notificar(e, s.id, "marcacao", textos.novaMarcacaoApp({ ...base, pacienteNome }), { consultaId: c.id });
         }
       }
+      this.notificar(e, this.contaDoMedico(e, c.medicoId), "marcacao", textos.novaParaMedico({ pacienteNome, inicio: c.inicio, porConfirmar: estado === "aguardando" }), { consultaId: c.id });
       const dia = diaDe(inicio);
       for (const x of e.espera) {
         if (x.estado === "activa" && x.pacienteId === c.pacienteId && x.especialidadeId === c.especialidadeId && x.dataDesejada === dia) x.estado = "marcada";
@@ -667,6 +679,9 @@ export class RepositorioDemo implements Repositorio {
       this.apagarLembretes(e, c.id);
       this.criarLembretes(e, c);
       this.notificar(e, this.userDoPaciente(e, c.pacienteId), "reagendamento", textos.reagendamento(this.baseTexto(e, c)), { consultaId: c.id });
+      this.notificar(e, this.contaDoMedico(e, c.medicoId), "reagendamento", textos.reagendadaParaMedico({ pacienteNome: this.nomePaciente(e, c.pacienteId), inicio: c.inicio, porConfirmar: c.estado === "aguardando" }), {
+        consultaId: c.id,
+      });
       this.oferecerVaga(e, antiga);
       return this.detalhar(e, c, u);
     });
@@ -680,7 +695,29 @@ export class RepositorioDemo implements Repositorio {
       c.canceladaEm = this.agoraISO();
       this.apagarLembretes(e, c.id);
       this.notificar(e, this.userDoPaciente(e, c.pacienteId), "cancelamento", textos.cancelamento(this.baseTexto(e, c)), { consultaId: c.id });
+      this.notificar(e, this.contaDoMedico(e, c.medicoId), "cancelamento", textos.canceladaParaMedico({ pacienteNome: this.nomePaciente(e, c.pacienteId), inicio: c.inicio }), { consultaId: c.id });
       this.oferecerVaga(e, c);
+    });
+  }
+
+  async recusar(id: string, motivo: string) {
+    const u = this.exigir("medico");
+    await this.mudar(["consultas", "notificacoes"], (e) => {
+      const c = e.consultas.find((x) => x.id === id);
+      if (!c) throw erroAgenda("nao_encontrada");
+      if (c.medicoId !== u.medicoId) throw erroAgenda("sem_permissao");
+      if (c.estado !== "aguardando") throw erroAgenda("estado_invalido");
+      if (Date.parse(c.inicio) <= this.agora().getTime()) throw erroAgenda("passado");
+      c.estado = "cancelada";
+      c.canceladaEm = this.agoraISO();
+      c.recusada = true;
+      c.motivoRecusa = motivo.trim().slice(0, 300);
+      this.apagarLembretes(e, c.id);
+      // O médico não pode: o horário não vai para a lista de espera.
+      this.notificar(e, this.userDoPaciente(e, c.pacienteId), "cancelamento", textos.recusa({ ...this.baseTexto(e, c), motivo: c.motivoRecusa }), { consultaId: c.id });
+      for (const s of e.utilizadores.filter((x) => eEquipa(x.papel))) {
+        this.notificar(e, s.id, "cancelamento", textos.recusaEquipa({ ...this.baseTexto(e, c), pacienteNome: this.nomePaciente(e, c.pacienteId), motivo: c.motivoRecusa }), { consultaId: c.id });
+      }
     });
   }
 
@@ -701,7 +738,8 @@ export class RepositorioDemo implements Repositorio {
       c.estado = estado;
       if (estado === "confirmada" && !c.confirmadaEm) {
         c.confirmadaEm = this.agoraISO();
-        this.notificar(e, this.userDoPaciente(e, c.pacienteId), "confirmacao", textos.confirmacao(this.baseTexto(e, c)), { consultaId: c.id });
+        const base = this.baseTexto(e, c);
+        this.notificar(e, this.userDoPaciente(e, c.pacienteId), "confirmacao", u.papel === "medico" ? textos.confirmacaoMedico(base) : textos.confirmacao(base), { consultaId: c.id });
       }
     });
   }

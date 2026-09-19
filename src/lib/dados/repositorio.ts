@@ -120,6 +120,8 @@ export interface Repositorio {
   reagendar(id: string, novoInicio: string): Promise<ConsultaDetalhada>;
   cancelar(id: string): Promise<void>;
   mudarEstado(id: string, estado: EstadoConsulta): Promise<void>;
+  /** O médico não pode atender: a consulta fica cancelada, com o motivo, e o horário livre. */
+  recusar(id: string, motivo: string): Promise<void>;
 
   // Pacientes e familiares
   pacientes(pesquisa?: string): Promise<PacienteResumo[]>;

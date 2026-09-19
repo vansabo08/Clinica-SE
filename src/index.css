@@ -271,6 +271,270 @@
   }
 }
 
+/* ------------------------------------------------------------
+   Entradas, listas e avisos. Curto e suave: o movimento mostra
+   o que mudou e de onde veio, e depois pára.
+   ------------------------------------------------------------ */
+
+@keyframes pagina {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes entrar-foto {
+  from {
+    opacity: 0;
+    transform: translateY(56px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes descer {
+  from {
+    opacity: 0;
+    transform: translateY(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes zoom-lento {
+  from {
+    transform: scale(1.12);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes chegar {
+  0% {
+    opacity: 0;
+    transform: translateY(-110%) scale(0.96);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(6px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes onda {
+  from {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.1);
+  }
+}
+
+@keyframes sino {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  15% {
+    transform: rotate(18deg);
+  }
+  30% {
+    transform: rotate(-15deg);
+  }
+  45% {
+    transform: rotate(10deg);
+  }
+  60% {
+    transform: rotate(-7deg);
+  }
+  75% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes esvaziar {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes sair {
+  to {
+    opacity: 0;
+    transform: translateX(28px) scale(0.98);
+  }
+}
+
+@keyframes brilho {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+@layer utilities {
+  .anim-pagina {
+    animation: pagina 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .anim-entrar {
+    animation: entrar 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .anim-entrar-foto {
+    animation: entrar-foto 1000ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .anim-descer {
+    animation: descer 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .anim-zoom-lento {
+    animation: zoom-lento 2400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .anim-chegar {
+    animation: chegar 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .anim-onda {
+    animation: onda 1400ms ease-out 2 both;
+  }
+  .anim-sino {
+    animation: sino 900ms ease-in-out both;
+    transform-origin: 50% 10%;
+  }
+  .anim-pop {
+    animation: pop 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .anim-esvaziar {
+    animation: esvaziar 8s linear both;
+  }
+
+  /* Listas: cada item entra um pouco depois do anterior. */
+  .anim-lista > * {
+    animation: surgir 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .anim-lista > :nth-child(2) {
+    animation-delay: 40ms;
+  }
+  .anim-lista > :nth-child(3) {
+    animation-delay: 80ms;
+  }
+  .anim-lista > :nth-child(4) {
+    animation-delay: 120ms;
+  }
+  .anim-lista > :nth-child(5) {
+    animation-delay: 160ms;
+  }
+  .anim-lista > :nth-child(6) {
+    animation-delay: 200ms;
+  }
+  .anim-lista > :nth-child(7) {
+    animation-delay: 240ms;
+  }
+  .anim-lista > :nth-child(8) {
+    animation-delay: 280ms;
+  }
+  .anim-lista > :nth-child(9) {
+    animation-delay: 320ms;
+  }
+  .anim-lista > :nth-child(10) {
+    animation-delay: 360ms;
+  }
+  .anim-lista > :nth-child(n + 11) {
+    animation-delay: 400ms;
+  }
+
+  /* Um item respondido fica um instante com o resultado e sai para o lado. */
+  .anim-sair,
+  .anim-lista > .anim-sair {
+    animation: sair 500ms cubic-bezier(0.55, 0, 1, 0.45) 1100ms both;
+  }
+
+  /* Cartões que sobem um pouco ao passar o rato. */
+  .levantar {
+    transition:
+      transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 260ms ease,
+      border-color 200ms ease,
+      background-color 200ms ease;
+  }
+  @media (hover: hover) {
+    .levantar:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 40px rgba(12, 87, 81, 0.12);
+    }
+  }
+
+  .esqueleto {
+    background: linear-gradient(90deg, #e3eeec 0%, #eef6f4 50%, #e3eeec 100%);
+    background-size: 200% 100%;
+    animation: brilho 1.5s linear infinite;
+  }
+}
+
+/* Revelar ao rolar (página inicial). Sem JavaScript fica tudo visível. */
+.com-revelar [data-revelar] {
+  opacity: 0;
+  transform: translateY(36px);
+  transition:
+    opacity 800ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--atraso, 0ms);
+}
+.com-revelar [data-revelar="esquerda"] {
+  transform: translateX(-40px);
+}
+.com-revelar [data-revelar="direita"] {
+  transform: translateX(40px);
+}
+.com-revelar [data-revelar="zoom"] {
+  transform: scale(0.94);
+}
+.com-revelar [data-revelar].revelado {
+  opacity: 1;
+  transform: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

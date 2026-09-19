@@ -383,10 +383,10 @@ function VistaLista({
                   <span className="hidden truncate text-xs text-grafite md:block">{c.especialidade.nome}</span>
                 </span>
               </span>
-              <EtiquetaEstado estado={c.estado} curto className="mt-1 w-fit sm:hidden" />
+              <EtiquetaEstado estado={c.estado} recusada={c.recusada} curto className="mt-1 w-fit sm:hidden" />
             </span>
           </button>
-          <EtiquetaEstado estado={c.estado} curto className="hidden sm:inline-flex" />
+          <EtiquetaEstado estado={c.estado} recusada={c.recusada} curto className="hidden sm:inline-flex" />
           <div className="hidden w-[6.5rem] justify-end lg:flex">
             {c.estado === "aguardando" && Date.parse(c.inicio) > agoraMs && (
               <Botao tamanho="sm" variante="suave" aCarregar={aConfirmar === c.id} onClick={() => aoConfirmar(c.id)}>
@@ -402,7 +402,7 @@ function VistaLista({
 
   return (
     <div className="cartao mt-4 overflow-hidden">
-      <ul className="divide-y divide-linha">{linhas}</ul>
+      <ul className="anim-lista divide-y divide-linha">{linhas}</ul>
     </div>
   );
 }

@@ -23,7 +23,7 @@ import { type Dia, diaDaSemana, diaDe, hoje, instanteISO, somarDias, somarMinuto
 import { vagasDoDia } from "../../disponibilidade";
 import { textos } from "../../textos";
 
-export const ESQUEMA_DEMO = 3;
+export const ESQUEMA_DEMO = 4;
 
 export interface UtilizadorDemo extends Utilizador {
   senha: string;
@@ -272,6 +272,8 @@ export function criarSemente(agora: Date): EstadoDemo {
       confirmadaEm: ["confirmada", "em_atendimento", "concluida", "faltou"].includes(p.estado) ? iso(Math.min(agoraMs, Date.parse(criadaEm) + 6 * HORA)) : null,
       canceladaEm: p.estado === "cancelada" ? (p.canceladaEm ?? iso(Math.min(agoraMs - HORA, inicioMs - DIA))) : null,
       reagendadaDe: null,
+      recusada: false,
+      motivoRecusa: "",
     };
     consultas.push(c);
     if (c.estado !== "cancelada") reservadas.add(chave(c.medicoId, c.inicio));

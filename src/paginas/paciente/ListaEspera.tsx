@@ -140,7 +140,7 @@ export function ListaEsperaPaciente() {
       {outras.length > 0 && (
         <section className="mt-8">
           <h2 className="mb-2 text-sm font-semibold text-grafite">Pedidos anteriores</h2>
-          <ul className="cartao divide-y divide-linha">
+          <ul className="cartao anim-lista divide-y divide-linha">
             {outras.map((e) => (
               <li key={e.id} className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
                 <span className="min-w-0 truncate text-grafite">

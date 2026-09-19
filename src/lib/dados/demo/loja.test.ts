@@ -141,6 +141,44 @@ describe("permissões", () => {
     expect(aviso?.corpo).toContain("de Tiago");
   });
 
+  it("o médico é avisado da marcação e confirma-a", async () => {
+    await repo.entrarComo("paciente");
+    const [vaga] = await vagasDe("m-joao");
+    const c = await repo.marcar({ pacienteId: "p-maria", medicoId: "m-joao", inicio: vaga.inicio });
+
+    await repo.entrarComo("medico");
+    const aviso = (await repo.notificacoes()).find((n) => n.consultaId === c.id);
+    expect(aviso?.titulo).toBe("Nova consulta por confirmar");
+    await repo.mudarEstado(c.id, "confirmada");
+
+    await repo.entrarComo("paciente");
+    const confirmacao = (await repo.notificacoes()).find((n) => n.tipo === "confirmacao" && n.consultaId === c.id);
+    expect(confirmacao?.corpo).toMatch(/^Dr\. João Silva confirmou a consulta/);
+  });
+
+  it("o médico recusa com motivo: o paciente é avisado e o horário fica livre", async () => {
+    await repo.entrarComo("paciente");
+    const [vaga] = await vagasDe("m-joao");
+    const c = await repo.marcar({ pacienteId: "p-maria", medicoId: "m-joao", inicio: vaga.inicio });
+    expect(await codigo(repo.recusar(c.id, ""))).toBe("sem_permissao");
+
+    await repo.entrarComo("rececao");
+    expect(await codigo(repo.recusar(c.id, ""))).toBe("sem_permissao");
+
+    await repo.entrarComo("medico");
+    await repo.recusar(c.id, "Estarei no bloco operatório");
+    const depois = (await repo.consulta(c.id))!;
+    expect(depois.estado).toBe("cancelada");
+    expect(depois.recusada).toBe(true);
+    expect(await codigo(repo.recusar(c.id, ""))).toBe("estado_invalido");
+    expect((await vagasDe("m-joao")).some((v) => v.inicio === vaga.inicio)).toBe(true);
+
+    await repo.entrarComo("paciente");
+    const aviso = (await repo.notificacoes()).find((n) => n.tipo === "cancelamento" && n.consultaId === c.id);
+    expect(aviso?.titulo).toBe("Consulta não confirmada");
+    expect(aviso?.corpo).toContain("Motivo: Estarei no bloco operatório.");
+  });
+
   it("muda a palavra-passe só com a actual certa", async () => {
     await repo.entrarComo("paciente");
     expect(await codigo(repo.mudarSenha("nova-senha-1", "errada"))).toBe("A palavra-passe actual não está certa.");

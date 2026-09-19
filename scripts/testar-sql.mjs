@@ -71,7 +71,7 @@ await db.exec(`
   alter default privileges in schema public grant execute on functions to anon, authenticated;
 `);
 
-for (const f of ["0001_esquema.sql", "0002_regras_de_agenda.sql", "0003_permissoes.sql", "0004_ajustes_de_seguranca.sql", "0005_pagina_publica.sql"]) {
+for (const f of ["0001_esquema.sql", "0002_regras_de_agenda.sql", "0003_permissoes.sql", "0004_ajustes_de_seguranca.sql", "0005_pagina_publica.sql", "0006_confirmacao_pelo_medico.sql"]) {
   await db.exec(readFileSync(new URL(`../supabase/migrations/${f}`, import.meta.url), "utf8"));
 }
 console.log("Migrações aplicadas.\n");
@@ -198,6 +198,40 @@ await verificar("a Maria marca para o filho com a própria conta", async () => {
   return aviso.corpo.startsWith("A consulta de Tiago com Dr. João Silva");
 });
 await verificar("o Carlos não vê o filho da Maria", async () => (await como(CARLOS, "select count(*)::int n from patients where nome = 'Tiago Kiala'"))[0].n === 0);
+
+console.log("\nConfirmação pelo médico");
+const dia3 = dia(3);
+let paraConfirmar, paraRecusar;
+await verificar("o médico é avisado de uma consulta nova por confirmar", async () => {
+  [paraConfirmar] = await como(CARLOS, MARCAR, [pCarlos, medico.id, as(dia3, "09:00")]);
+  const avisos = await como(JOAO, "select titulo, corpo from notifications where appointment_id = $1", [paraConfirmar.id]);
+  return avisos.length === 1 && avisos[0].titulo === "Nova consulta por confirmar" && avisos[0].corpo.endsWith("Confirme ou recuse.");
+});
+await verificar("o médico confirma e o paciente sabe que foi ele", async () => {
+  const [c] = await como(JOAO, "select * from mudar_estado_consulta($1, 'confirmada')", [paraConfirmar.id]);
+  const [aviso] = await como(CARLOS, "select corpo from notifications where appointment_id = $1 and tipo = 'confirmacao'", [paraConfirmar.id]);
+  return c.estado === "confirmada" && aviso?.corpo.startsWith("Dr. João Silva confirmou a consulta");
+});
+await verificar("o médico não recusa uma consulta já confirmada", () => recusa(JOAO, "select recusar_consulta($1, '')", [paraConfirmar.id], "estado_invalido"));
+await verificar("o paciente não recusa em nome do médico", async () => {
+  [paraRecusar] = await como(CARLOS, MARCAR, [pCarlos, medico.id, as(dia3, "10:00")]);
+  return recusa(CARLOS, "select recusar_consulta($1, '')", [paraRecusar.id], "sem_permissao");
+});
+await verificar("nem a receção: recusar é do médico", () => recusa(TERESA, "select recusar_consulta($1, '')", [paraRecusar.id], "sem_permissao"));
+await verificar("o médico recusa com motivo e o horário fica livre", async () => {
+  const [c] = await como(JOAO, "select * from recusar_consulta($1, $2)", [paraRecusar.id, "  Estarei no bloco operatório "]);
+  const [outra] = await como(MARIA, MARCAR, [pMaria, medico.id, as(dia3, "10:00")]);
+  return c.estado === "cancelada" && c.recusada === true && c.motivo_recusa === "Estarei no bloco operatório" && outra.estado === "aguardando";
+});
+await verificar("o paciente recebe o motivo e o convite para outro horário", async () => {
+  const [aviso] = await como(CARLOS, "select titulo, corpo from notifications where appointment_id = $1 and tipo = 'cancelamento'", [paraRecusar.id]);
+  return aviso?.titulo === "Consulta não confirmada" && aviso.corpo.includes("Motivo: Estarei no bloco operatório.") && aviso.corpo.endsWith("Escolha outro horário na aplicação.");
+});
+await verificar("a receção é avisada da recusa", async () => (await como(TERESA, "select count(*)::int n from notifications where appointment_id = $1 and titulo = 'Consulta recusada pelo médico'", [paraRecusar.id]))[0].n === 1);
+await verificar("o médico é avisado quando o paciente cancela", async () => {
+  await como(CARLOS, "select cancelar_consulta($1)", [paraConfirmar.id]);
+  return (await como(JOAO, "select count(*)::int n from notifications where appointment_id = $1 and titulo = 'Consulta cancelada'", [paraConfirmar.id]))[0].n === 1;
+});
 
 console.log("\nPágina pública");
 /** Espera "permission denied" ao correr sem sessão. */

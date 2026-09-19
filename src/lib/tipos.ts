@@ -105,6 +105,9 @@ export interface Consulta {
   confirmadaEm: string | null;
   canceladaEm: string | null;
   reagendadaDe: string | null;
+  /** Cancelada porque o médico não a pôde confirmar. */
+  recusada: boolean;
+  motivoRecusa: string;
 }
 
 export type TipoNotificacao = "lembrete" | "marcacao" | "confirmacao" | "reagendamento" | "cancelamento" | "vaga";

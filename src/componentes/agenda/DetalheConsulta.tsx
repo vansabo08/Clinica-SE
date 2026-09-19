@@ -1,4 +1,4 @@
-import { CalendarClock, CalendarX2, Phone } from "lucide-react";
+import { CalendarClock, CalendarX2, Check, Phone, X } from "lucide-react";
 import { useState } from "react";
 import type { Vaga } from "../../lib/disponibilidade";
 import { repo } from "../../lib/dados";
@@ -12,6 +12,7 @@ import { mensagemDeErro, useAviso } from "../Aviso";
 import { Confirmacao, Folha } from "../Folha";
 import { LogoWhatsApp } from "../icones";
 import { EscolhaHorario } from "../marcacao/EscolhaHorario";
+import { FolhaRecusar } from "./FolhaRecusar";
 import { Botao, Esqueleto, EtiquetaEstado, Par, estiloBotao } from "../ui";
 
 const CANAIS: Record<Canal, string> = {
@@ -41,6 +42,7 @@ export function DetalheConsulta({ consultaId, aoFechar, papel }: { consultaId: s
   const [novaVaga, setNovaVaga] = useState<Vaga | null>(null);
   const [aMudar, setAMudar] = useState<string | null>(null);
   const [perguntarCancelar, setPerguntarCancelar] = useState(false);
+  const [aRecusar, setARecusar] = useState(false);
 
   const c = dados && dados.id === consultaId ? dados : null;
 
@@ -98,6 +100,9 @@ export function DetalheConsulta({ consultaId, aoFechar, papel }: { consultaId: s
     ? []
     : (papel === "medico" ? (TRANSICOES_MEDICO[c.estado] ?? []) : TRANSICOES[c.estado].filter((e) => e !== "cancelada")).filter((e) => e !== "faltou" || comecou);
   const alteravel = papel === "equipa" && !!c && ESTADOS_ALTERAVEIS.includes(c.estado) && !comecou;
+  // O médico decide as consultas que ainda aguardam: confirmar ou recusar.
+  const decidir = papel === "medico" && !!c && c.estado === "aguardando" && !comecou;
+  const rotulo = (e: EstadoConsulta) => (papel === "medico" && e === "confirmada" ? "Confirmar consulta" : ACCAO_PARA[e]);
   const medico = c ? medicos?.find((m) => m.id === c.medicoId) : undefined;
   const idadeTexto = c ? idadeLegivel(c.paciente.dataNascimento) : null;
 
@@ -110,16 +115,38 @@ export function DetalheConsulta({ consultaId, aoFechar, papel }: { consultaId: s
         largura="md"
         titulo={!c ? "Consulta" : modo === "reagendar" ? "Reagendar consulta" : c.paciente.nome}
         descricao={c ? (modo === "reagendar" ? `${c.paciente.nome}. Agora: ${quandoCurto(c.inicio)}` : `${diaRelativo(diaDe(c.inicio))}, ${horaDe(c.inicio)} às ${horaDe(c.fim)}`) : undefined}
-        antesDoTitulo={c && modo === "detalhe" ? <EtiquetaEstado estado={c.estado} className="mb-2" /> : undefined}
+        antesDoTitulo={c && modo === "detalhe" ? <EtiquetaEstado estado={c.estado} recusada={c.recusada} className="mb-2" /> : undefined}
         rodape={
           !c ? undefined : modo === "detalhe" ? (
             transicoes.length > 0 || alteravel ? (
               <div className="flex flex-col gap-2">
-                {transicoes.length > 0 && (
+                {decidir ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Botao tamanho="lg" variante="perigo-suave" className="border border-estado-vermelho/25" icone={<X className="h-5 w-5" />} onClick={() => setARecusar(true)}>
+                        Recusar
+                      </Botao>
+                      <Botao tamanho="lg" icone={<Check className="h-5 w-5" />} aCarregar={aMudar === "confirmada"} onClick={() => mudarEstado("confirmada")}>
+                        Confirmar
+                      </Botao>
+                    </div>
+                    {transicoes.some((e) => e !== "confirmada") && (
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {transicoes
+                          .filter((e) => e !== "confirmada")
+                          .map((e) => (
+                            <Botao key={e} variante="secundario" aCarregar={aMudar === e} onClick={() => mudarEstado(e)}>
+                              {rotulo(e)}
+                            </Botao>
+                          ))}
+                      </div>
+                    )}
+                  </>
+                ) : transicoes.length > 0 && (
                   <div className="grid gap-2 sm:grid-cols-2">
                     {transicoes.map((e, i) => (
                       <Botao key={e} tamanho="lg" variante={i === 0 ? "primario" : "secundario"} aCarregar={aMudar === e} onClick={() => mudarEstado(e)} className={transicoes.length === 1 ? "sm:col-span-2" : undefined}>
-                        {ACCAO_PARA[e]}
+                        {rotulo(e)}
                       </Botao>
                     ))}
                   </div>
@@ -212,10 +239,13 @@ export function DetalheConsulta({ consultaId, aoFechar, papel }: { consultaId: s
                 </Par>
               )}
               {c.reagendadaDe && <Par rotulo="Estava para">{quandoCurto(c.reagendadaDe, agora)}</Par>}
+              {c.recusada && <Par rotulo="Recusada pelo médico">{c.motivoRecusa || "Sem motivo indicado"}</Par>}
             </dl>
           </div>
         )}
       </Folha>
+
+      <FolhaRecusar consulta={aRecusar ? c : null} aoFechar={() => setARecusar(false)} />
 
       <Confirmacao
         aberta={perguntarCancelar}

@@ -47,7 +47,7 @@ export function Inicio() {
       <div className="grid gap-9 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-12">
         <div className="min-w-0">
           <div className="relative isolate overflow-hidden rounded-[32px] bg-esperanca-800 px-6 pb-7 pt-5 sm:px-9 sm:pb-9 sm:pt-9">
-            <img src={FOTOS.abertura} alt="" className="absolute inset-0 -z-20 h-full w-full object-cover" />
+            <img src={FOTOS.abertura} alt="" className="anim-zoom-lento absolute inset-0 -z-20 h-full w-full object-cover" />
             <div className="absolute inset-0 -z-10 bg-[linear-gradient(135deg,rgba(8,59,55,0.92)_0%,rgba(12,87,81,0.84)_50%,rgba(22,131,122,0.7)_100%)]" />
             <div className="flex items-center justify-between lg:hidden">
               <Simbolo className="h-9 w-9" clara />
@@ -56,10 +56,12 @@ export function Inicio() {
               </Link>
             </div>
 
-            <h1 className="mt-8 font-serif text-[2.625rem] leading-[1.08] tracking-[-0.02em] text-white lg:mt-0 lg:text-[3rem]">Olá, {primeiroNome(u.nome)}</h1>
-            <p className="mt-2 text-lg text-white/80">Pronto para cuidar da sua saúde?</p>
+            <h1 className="anim-entrar mt-8 font-serif text-[2.625rem] leading-[1.08] tracking-[-0.02em] text-white lg:mt-0 lg:text-[3rem]" style={{ animationDelay: "80ms" }}>Olá, {primeiroNome(u.nome)}</h1>
+            <p className="anim-entrar mt-2 text-lg text-white/80" style={{ animationDelay: "180ms" }}>
+              Pronto para cuidar da sua saúde?
+            </p>
 
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="anim-entrar mt-7 flex flex-col gap-3 sm:flex-row sm:items-center" style={{ animationDelay: "280ms" }}>
               <Botao variante="claro" tamanho="xl" larguraTotal className="sm:w-auto sm:px-10" icone={<Plus className="h-6 w-6" strokeWidth={2.5} />} onClick={() => navigate("/marcar")}>
                 Marcar consulta
               </Botao>
@@ -134,9 +136,9 @@ export function Inicio() {
           </section>
         </div>
 
-        <nav aria-label="Atalhos" className="grid grid-cols-2 content-start gap-3 lg:grid-cols-1">
+        <nav aria-label="Atalhos" className="anim-lista grid grid-cols-2 content-start gap-3 lg:grid-cols-1">
           {atalhos.map((a) => (
-            <Link key={a.para} to={a.para} className="flex flex-col gap-3 rounded-[24px] border border-linha bg-white p-4 transition-colors hover:border-esperanca-300 hover:bg-esperanca-50/50 lg:flex-row lg:items-center">
+            <Link key={a.para} to={a.para} className="levantar flex flex-col gap-3 rounded-[24px] border border-linha bg-white p-4 hover:border-esperanca-300 lg:flex-row lg:items-center">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-esperanca-50 text-esperanca">
                 <a.Icone className="h-5 w-5" aria-hidden="true" />
               </span>

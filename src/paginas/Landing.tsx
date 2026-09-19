@@ -1,5 +1,5 @@
 import { ArrowRight, CalendarDays, Check, ChevronDown, Clock, Mail, MapPin, Menu, Navigation, Phone, Stethoscope, UserRound, X, type LucideProps } from "lucide-react";
-import { useEffect, useState, type ComponentType, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type ComponentType, type FormEvent, type ReactNode } from "react";
 import { Link, Navigate, useNavigate } from "react-router";
 import { mensagemDeErro, useAviso } from "../componentes/Aviso";
 import { IconeEspecialidade, LogoWhatsApp } from "../componentes/icones";
@@ -11,6 +11,7 @@ import { FOTOS } from "../lib/fotos";
 import { linkComoChegar } from "../lib/mapa";
 import { demoPorLink, sairDaDemo } from "../lib/modo";
 import { casaDoPapel } from "../lib/rotas";
+import { useContagem, useRevelar } from "../lib/revelar";
 import { useSessao } from "../lib/sessao";
 import { hoje, somarDias } from "../lib/tempo";
 import type { Papel } from "../lib/tipos";
@@ -54,6 +55,19 @@ const ENTRADAS: { papel: Papel; titulo: string; resumo: string; pontos: string[]
   },
 ];
 
+/** Atraso de entrada, para os elementos revelarem uns a seguir aos outros. */
+const atraso = (ms: number) => ({ "--atraso": `${ms}ms` }) as CSSProperties;
+const depois = (ms: number): CSSProperties => ({ animationDelay: `${ms}ms` });
+
+function Numero({ valor, sufixo = "", className }: { valor: number | null; sufixo?: string; className?: string }) {
+  const { ref, mostrado } = useContagem(valor ?? 0);
+  return (
+    <span ref={ref} className={className}>
+      {valor === null ? "–" : `${mostrado}${sufixo}`}
+    </span>
+  );
+}
+
 /** O traço à mão por baixo das palavras em destaque. */
 function Traco({ className }: { className?: string }) {
   return (
@@ -95,6 +109,7 @@ export function Landing() {
     [],
     ["clinica", "especialidades", "medicos"],
   );
+  const revelar = useRevelar<HTMLDivElement>();
   const [aEntrar, setAEntrar] = useState<string | null>(null);
   const [menu, setMenu] = useState(false);
   const [activa, setActiva] = useState<string | null>(null);
@@ -145,14 +160,14 @@ export function Landing() {
   }
 
   const marcarAgora = (chave: string) => abrir("paciente", "/marcar", chave);
-  const numeros: { valor: string; rotulo: string; destaque?: boolean }[] = [
-    { valor: dados ? String(medicos.length) : "–", rotulo: medicos.length === 1 ? "Médico a receber marcações" : "Médicos a receber marcações" },
-    { valor: dados ? String(especialidades.length) : "–", rotulo: "Especialidades", destaque: true },
-    { valor: "24 h", rotulo: "Lembrete antes da consulta" },
+  const numeros: { valor: number | null; sufixo?: string; rotulo: string; destaque?: boolean }[] = [
+    { valor: dados ? medicos.length : null, rotulo: medicos.length === 1 ? "Médico a receber marcações" : "Médicos a receber marcações" },
+    { valor: dados ? especialidades.length : null, rotulo: "Especialidades", destaque: true },
+    { valor: 24, sufixo: " h", rotulo: "Lembrete antes da consulta" },
   ];
 
   return (
-    <div className="min-h-dvh overflow-x-clip bg-white">
+    <div ref={revelar} className="min-h-dvh overflow-x-clip bg-white">
       {demo && demoPorLink && (
         <div className="bg-esperanca-900 text-white">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-5 py-2 text-sm sm:px-8">
@@ -179,10 +194,10 @@ export function Landing() {
       {/* ---------------------------------------------------------- Abertura */}
       <section id="topo" className="scroll-mt-4 px-3 pt-3 sm:px-5 sm:pt-5">
         <div className="relative isolate overflow-hidden rounded-[28px] bg-esperanca-800 sm:rounded-[40px]">
-          <img src={FOTOS.abertura} alt="" fetchPriority="high" className="absolute inset-0 -z-20 h-full w-full object-cover" />
+          <img src={FOTOS.abertura} alt="" fetchPriority="high" className="anim-zoom-lento absolute inset-0 -z-20 h-full w-full object-cover" />
           <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(8,59,55,0.78)_0%,rgba(16,107,100,0.72)_50%,rgba(22,131,122,0.86)_100%)]" />
 
-          <header className="relative z-20 px-3 pt-3 sm:px-6 sm:pt-6">
+          <header className="anim-descer relative z-20 px-3 pt-3 sm:px-6 sm:pt-6">
             <div className="vidro-foto mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-full py-2 pl-4 pr-2 sm:pl-6">
               <Link to="/" className="rounded-full" aria-label="Clínica Sagrada Esperança, página inicial">
                 <Marca clara />
@@ -242,17 +257,17 @@ export function Landing() {
           </header>
 
           <div className="mx-auto max-w-4xl px-6 pb-44 pt-14 text-center sm:pb-64 sm:pt-20 lg:pb-72 lg:pt-24">
-            <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-[-0.02em] text-white sm:text-6xl lg:text-[4.5rem] lg:leading-[1.05]">
+            <h1 className="anim-entrar text-[2.5rem] font-bold leading-[1.1] tracking-[-0.02em] text-white sm:text-6xl lg:text-[4.5rem] lg:leading-[1.05]" style={depois(120)}>
               Um lugar seguro para{" "}
               <span className="relative inline-block whitespace-nowrap">
                 cuidar de si
                 <Traco className="absolute -bottom-2 left-0 h-3 w-full text-white sm:-bottom-4 sm:h-5" />
               </span>
             </h1>
-            <p className="mx-auto mt-7 max-w-2xl text-lg leading-8 text-white/85 sm:text-xl">
+            <p className="anim-entrar mx-auto mt-7 max-w-2xl text-lg leading-8 text-white/85 sm:text-xl" style={depois(260)}>
               Marque a sua consulta de forma rápida, simples e sem filas. Escolha a especialidade, o médico e a hora; a clínica confirma e lembra-o na véspera.
             </p>
-            <div className="mt-9 flex flex-wrap justify-center gap-3">
+            <div className="anim-entrar mt-9 flex flex-wrap justify-center gap-3" style={depois(400)}>
               <Botao variante="vidro" tamanho="lg" className="pl-7 pr-2" aCarregar={aEntrar === "abertura"} onClick={() => marcarAgora("abertura")}>
                 Marcar consulta
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-esperanca-800">
@@ -278,8 +293,9 @@ export function Landing() {
             src={src}
             alt=""
             loading="lazy"
+            style={depois(520 + ([120, 0, 240][i] ?? 0))}
             className={cx(
-              "w-1/3 rounded-[22px] object-cover object-top shadow-flutua ring-4 ring-white sm:rounded-[32px] sm:ring-8",
+              "anim-entrar-foto w-1/3 rounded-[22px] object-cover object-top shadow-flutua ring-4 ring-white sm:rounded-[32px] sm:ring-8",
               i === 1 ? "h-48 sm:h-[340px] lg:h-[380px]" : "h-40 sm:h-[280px] lg:h-[310px]",
             )}
           />
@@ -290,7 +306,7 @@ export function Landing() {
         <h2 id="titulo-barra" className="sr-only">
           Marcar consulta
         </h2>
-        <form onSubmit={marcar} className="rounded-[28px] bg-white p-3 shadow-flutua ring-1 ring-linha sm:rounded-full sm:p-2.5">
+        <form onSubmit={marcar} className="anim-entrar rounded-[28px] bg-white p-3 shadow-flutua ring-1 ring-linha sm:rounded-full sm:p-2.5" style={depois(820)}>
           <div className="grid gap-1 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-center sm:gap-0">
             <CampoBarra rotulo="Especialidade" icone={<Stethoscope />}>
               <select
@@ -340,7 +356,7 @@ export function Landing() {
       {/* ---------------------------------------------------------- Sobre nós, em números */}
       <section id="sobre" className="mx-auto max-w-6xl scroll-mt-6 px-5 py-20 sm:px-8 lg:py-28">
         <div className="grid items-center gap-14 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-12">
-          <div>
+          <div data-revelar="esquerda">
             <Etiqueta>Sobre nós</Etiqueta>
             <h2 className="mt-5 text-4xl font-bold leading-[1.12] tracking-[-0.015em] text-tinta sm:text-5xl">
               Cuidamos de si e da sua família,{" "}
@@ -368,13 +384,15 @@ export function Landing() {
             {numeros.map((n, i) => (
               <li
                 key={n.rotulo}
+                data-revelar="zoom"
+                style={atraso(150 + i * 140)}
                 className={cx(
                   "flex h-52 w-52 shrink-0 flex-col items-center justify-center rounded-full px-6 text-center sm:h-48 sm:w-48 xl:h-52 xl:w-52",
                   i > 0 && "-mt-6 sm:-ml-6 sm:mt-0",
                   n.destaque ? "relative z-10 bg-esperanca text-white shadow-botao" : "border-2 border-esperanca-200 bg-white/90 text-tinta backdrop-blur",
                 )}
               >
-                <span className={cx("num text-5xl font-bold tracking-[-0.02em]", !n.destaque && "text-esperanca")}>{n.valor}</span>
+                <Numero valor={n.valor} sufixo={n.sufixo} className={cx("num text-5xl font-bold tracking-[-0.02em]", !n.destaque && "text-esperanca")} />
                 <span className={cx("mt-2 text-sm font-semibold leading-5", n.destaque ? "text-white/85" : "text-grafite")}>{n.rotulo}</span>
               </li>
             ))}
@@ -384,17 +402,17 @@ export function Landing() {
 
       {/* ---------------------------------------------------------- Especialidades sobre fotografia */}
       <section id="especialidades" className="scroll-mt-4 px-3 sm:px-5">
-        <div className="relative isolate overflow-hidden rounded-[28px] bg-esperanca-800 sm:rounded-[40px]">
+        <div data-revelar="zoom" className="relative isolate overflow-hidden rounded-[28px] bg-esperanca-800 sm:rounded-[40px]">
           <img src={FOTOS.especialidades} alt="" loading="lazy" className="absolute inset-0 -z-20 h-full w-full object-cover" />
           <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(8,59,55,0.94)_0%,rgba(12,87,81,0.84)_48%,rgba(22,131,122,0.72)_100%)]" />
 
           <div className="mx-auto grid max-w-6xl gap-12 px-6 py-16 sm:px-10 lg:grid-cols-2 lg:gap-16 lg:px-12 lg:py-24">
-            <div className="flex flex-col">
+            <div data-revelar="esquerda" style={atraso(200)} className="flex flex-col">
               <Etiqueta clara>Especialidades</Etiqueta>
               <h2 className="mt-5 text-4xl font-bold leading-[1.12] tracking-[-0.015em] text-white sm:text-5xl">Veja o que temos para cuidar da sua saúde</h2>
 
               {escolhida ? (
-                <div key={escolhida.id} className="anim-aparecer mt-8 rounded-[28px] bg-white/10 p-6 ring-1 ring-white/15 backdrop-blur-sm">
+                <div key={escolhida.id} className="anim-surgir mt-8 rounded-[28px] bg-white/10 p-6 ring-1 ring-white/15 backdrop-blur-sm">
                   <div className="flex items-center gap-4">
                     <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white text-esperanca">
                       <IconeEspecialidade icone={escolhida.icone} className="h-7 w-7" strokeWidth={1.8} />
@@ -425,10 +443,10 @@ export function Landing() {
 
             {especialidades.length > 0 && (
               <ul className="relative flex flex-col justify-center border-white/25 lg:items-end lg:border-r-2 lg:pr-8" aria-label="Especialidades">
-                {especialidades.map((e) => {
+                {especialidades.map((e, i) => {
                   const ligada = e.id === escolhida?.id;
                   return (
-                    <li key={e.id} className="relative lg:text-right">
+                    <li key={e.id} data-revelar="direita" style={atraso(250 + i * 60)} className="relative lg:text-right">
                       <button
                         type="button"
                         aria-pressed={ligada}
@@ -459,7 +477,7 @@ export function Landing() {
 
       {/* ---------------------------------------------------------- As três entradas */}
       <section className="mx-auto max-w-6xl px-5 py-20 sm:px-8 lg:py-28" aria-labelledby="titulo-entradas">
-        <div className="text-center">
+        <div data-revelar className="text-center">
           <Etiqueta>Acesso</Etiqueta>
           <h2 id="titulo-entradas" className="mt-5 text-4xl font-bold leading-[1.12] tracking-[-0.015em] text-tinta sm:text-5xl">
             Uma agenda, três entradas
@@ -469,13 +487,11 @@ export function Landing() {
           </p>
         </div>
         <ul className="mt-12 grid gap-5 md:grid-cols-3">
-          {ENTRADAS.map((e) => {
+          {ENTRADAS.map((e, i) => {
             const principal = e.papel === "paciente";
             return (
-              <li
-                key={e.papel}
-                className={cx("flex flex-col rounded-[32px] p-7", principal ? "bg-esperanca text-white shadow-botao" : "border border-linha bg-papel text-tinta")}
-              >
+              <li key={e.papel} data-revelar style={atraso(i * 130)}>
+                <div className={cx("levantar flex h-full flex-col rounded-[32px] p-7", principal ? "bg-esperanca text-white shadow-botao" : "border border-linha bg-papel text-tinta")}>
                 <span className={cx("flex h-14 w-14 items-center justify-center rounded-full", principal ? "bg-white text-esperanca" : "bg-white text-esperanca ring-1 ring-linha")}>
                   <e.Icone className="h-6 w-6" strokeWidth={1.8} aria-hidden="true" />
                 </span>
@@ -502,6 +518,7 @@ export function Landing() {
                   </Botao>
                   {demo && <p className={cx("mt-2 text-center text-sm", principal ? "text-white/75" : "text-grafite")}>{e.demo}</p>}
                 </div>
+                </div>
               </li>
             );
           })}
@@ -510,7 +527,7 @@ export function Landing() {
 
       {/* ---------------------------------------------------------- Fecho */}
       <section className="px-3 sm:px-5" aria-labelledby="titulo-fecho">
-        <div className="relative isolate overflow-hidden rounded-[28px] bg-esperanca-800 sm:rounded-[40px]">
+        <div data-revelar="zoom" className="relative isolate overflow-hidden rounded-[28px] bg-esperanca-800 sm:rounded-[40px]">
           <img src={FOTOS.fecho} alt="" loading="lazy" className="absolute inset-y-0 right-0 -z-20 h-full w-full object-cover object-[70%_30%] lg:w-[64%]" />
           <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,#0C5751_0%,#0C5751_36%,rgba(12,87,81,0.82)_55%,rgba(22,131,122,0.35)_100%)]" />
           <span
@@ -520,7 +537,7 @@ export function Landing() {
             Saúde
           </span>
 
-          <div className="max-w-2xl px-6 py-16 sm:px-12 sm:py-20 lg:px-16 lg:py-24">
+          <div data-revelar="esquerda" style={atraso(250)} className="max-w-2xl px-6 py-16 sm:px-12 sm:py-20 lg:px-16 lg:py-24">
             <h2 id="titulo-fecho" className="text-4xl font-bold leading-[1.12] tracking-[-0.015em] text-white sm:text-5xl">
               A sua saúde não pode esperar
             </h2>
@@ -544,7 +561,7 @@ export function Landing() {
       {/* ---------------------------------------------------------- Contactos */}
       <footer id="contactos" className="scroll-mt-4">
         <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:px-8 md:grid-cols-[1.2fr_1fr_1fr] lg:py-20">
-          <div>
+          <div data-revelar>
             <Marca />
             <p className="mt-5 max-w-xs text-grafite">Consultas marcadas a tempo, com a confirmação da receção e o lembrete na véspera.</p>
             {clinica && (
@@ -555,7 +572,7 @@ export function Landing() {
             )}
           </div>
 
-          <div>
+          <div data-revelar style={atraso(120)}>
             <p className="text-lg font-bold text-tinta">Onde estamos</p>
             {clinica ? (
               <ul className="mt-4 space-y-3 text-grafite">
@@ -578,7 +595,7 @@ export function Landing() {
           </div>
 
           {clinica && (clinica.telefone || clinica.whatsapp || clinica.email) && (
-            <div>
+            <div data-revelar style={atraso(240)}>
               <p className="text-lg font-bold text-tinta">Contactos</p>
               <ul className="mt-4 space-y-3 text-grafite">
                 {clinica.telefone && (

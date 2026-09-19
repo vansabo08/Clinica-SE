@@ -97,6 +97,7 @@ export function App() {
                 <Route path="/medico" element={<Hoje />} />
                 <Route path="/medico/agenda" element={<AgendaMedico />} />
                 <Route path="/medico/disponibilidade" element={<Disponibilidade />} />
+                <Route path="/medico/notificacoes" element={<Notificacoes />} />
               </Route>
             </Route>
 

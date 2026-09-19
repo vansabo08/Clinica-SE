@@ -111,14 +111,14 @@ export function Entrar() {
     <div className="min-h-dvh lg:grid lg:grid-cols-2">
       <aside className="hidden p-4 lg:block">
         <div className="relative isolate flex h-full min-h-[640px] flex-col justify-between overflow-hidden rounded-[40px] bg-esperanca-800 p-10 xl:p-14">
-          <img src={FOTOS.entrar} alt="" className="absolute inset-0 -z-20 h-full w-full object-cover" />
+          <img src={FOTOS.entrar} alt="" className="anim-zoom-lento absolute inset-0 -z-20 h-full w-full object-cover" />
           <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(8,59,55,0.55)_0%,rgba(12,87,81,0.7)_45%,rgba(8,59,55,0.96)_100%)]" />
           <Link to="/" className="vidro-foto self-start rounded-full py-2 pl-3 pr-5" aria-label="Página inicial">
             <Marca clara />
           </Link>
           <div>
-            <p className="max-w-lg text-[2.75rem] font-bold leading-[1.1] tracking-[-0.02em] text-white xl:text-[3.25rem]">Marque a sua consulta de forma rápida, simples e sem filas.</p>
-            <ul className="mt-8 flex flex-wrap gap-2.5">
+            <p className="anim-entrar max-w-lg text-[2.75rem] font-bold leading-[1.1] tracking-[-0.02em] text-white xl:text-[3.25rem]" style={{ animationDelay: "150ms" }}>Marque a sua consulta de forma rápida, simples e sem filas.</p>
+            <ul className="anim-lista mt-8 flex flex-wrap gap-2.5">
               {VANTAGENS.map(([Icone, texto]) => (
                 <li key={texto} className="vidro-foto inline-flex items-center gap-2 rounded-full px-4 py-2 font-semibold text-white">
                   <Icone className="h-4 w-4 text-esperanca-300" aria-hidden="true" />
@@ -163,7 +163,7 @@ export function Entrar() {
               </form>
             )
           ) : (
-            <form onSubmit={enviar} className="mt-7 space-y-4" noValidate>
+            <form onSubmit={enviar} className="anim-lista mt-7 space-y-4" noValidate>
               {aba === "criar" && (
                 <>
                   <Campo rotulo="Nome completo" autoComplete="name" {...campo("nome")} />

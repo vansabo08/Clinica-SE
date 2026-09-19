@@ -128,7 +128,7 @@ export function Pacientes() {
             </table>
           </div>
 
-          <ul className="cartao divide-y divide-linha overflow-hidden md:hidden">
+          <ul className="cartao anim-lista divide-y divide-linha overflow-hidden md:hidden">
             {lista.map((p) => (
               <li key={p.id}>
                 <button type="button" onClick={() => setAberto(p)} className="flex w-full items-center gap-3 px-4 py-3 text-left">
@@ -207,7 +207,7 @@ export function Pacientes() {
                       </p>
                       <p className="truncate text-xs text-grafite">{c.especialidade.nome}</p>
                     </div>
-                    <EtiquetaEstado estado={c.estado} curto />
+                    <EtiquetaEstado estado={c.estado} recusada={c.recusada} curto />
                   </li>
                 ))}
               </ul>

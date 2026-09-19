@@ -78,7 +78,7 @@ export function ListaEsperaRececao() {
           {[...grupos.entries()].map(([dia, entradas]) => (
             <section key={dia}>
               <h2 className="mb-2 text-sm font-semibold text-grafite">{diaRelativo(dia, agora)}</h2>
-              <ul className="cartao divide-y divide-linha">
+              <ul className="cartao anim-lista divide-y divide-linha">
                 {entradas.map((e) => {
                   const n = vagasPara(e);
                   const nome = primeiroNome(e.paciente.nome);

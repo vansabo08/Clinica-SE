@@ -58,6 +58,7 @@ segunda a sexta). Os ficheiros estão em `supabase/`:
 | `migrations/0003_permissoes.sql` | RLS: cada paciente só vê a família; o médico só a agenda dele; a receção gere a clínica |
 | `migrations/0004_ajustes_de_seguranca.sql` | telefone e email dos médicos só para a equipa; pedidos do Security Advisor |
 | `migrations/0005_pagina_publica.sql` | sem sessão, a página inicial lê as especialidades e os médicos activos (sem contactos) |
+| `migrations/0006_confirmacao_pelo_medico.sql` | o médico confirma ou recusa (com motivo) as consultas que aguardam; avisos para o médico das consultas novas, reagendadas e canceladas |
 | `seed.sql` | dados iniciais (só numa base vazia) |
 | `functions/enviar-lembretes` | envia os lembretes por WhatsApp |
 | `functions/convidar-medico` | convida um médico a criar conta |
@@ -129,6 +130,16 @@ pelo WhatsApp" já funcionam hoje, por ligação `wa.me`.
 - `src/lib/tempo.ts` — Luanda é UTC+1 todo o ano; os instantes guardam-se em UTC.
 - Páginas em `src/paginas/{paciente,rececao,medico}`; as da receção e do médico
   carregam à parte, para o telemóvel do paciente abrir depressa.
+- **Confirmação pelo médico**: no ecrã Hoje, o médico vê as consultas por confirmar
+  e responde Confirmar ou Recusar. Recusar cancela com o motivo escolhido; o paciente
+  é avisado e convidado a escolher outro horário, e a receção também sabe.
+- **Avisos ao vivo** (`src/lib/notificacoes.ts`, `src/lib/som.ts`): quando chega um
+  aviso novo toca um som curto (gerado com Web Audio), desce um cartão do topo e o
+  número aparece no separador. O som liga-se e desliga-se na página Notificações.
+  Os navegadores só deixam tocar som depois do primeiro toque na página.
+- **Movimento**: as páginas entram com um deslize curto, as listas em cascata e a
+  página inicial revela-se ao rolar (`src/lib/revelar.ts`). Quem pede menos
+  movimento no sistema vê tudo sem animação.
 
 ```bash
 npm test          # motor de vagas, regras e permissões (demonstração)
